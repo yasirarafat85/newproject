@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="bn" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>পোস্ট আইডিয়া জেনারেটর — শিশুদের অনলাইন কোর্স</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --primary: #F05340;
+    --primary-dark: #D43F2D;
+    --primary-light: #FF7B6B;
+
+    --bg: #F6F7FB;
+    --bg-secondary: #FFFFFF;
+    --surface: #FFFFFF;
+    --border: #E5E7EB;
+    --text: #111827;
+    --text-muted: #6B7280;
+
+    --success: #10B981;
+    --warning: #F59E0B;
+    --danger: #EF4444;
+    --info: #3B82F6;
+
+    --radius-sm: 8px;
+    --radius: 12px;
+    --radius-lg: 18px;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+    --shadow: 0 6px 20px rgba(17,24,39,0.08);
+    --shadow-lg: 0 16px 40px rgba(17,24,39,0.14);
+  }
+
+  [data-theme="dark"] {
+    --bg: #0F172A;
+    --bg-secondary: #1E293B;
+    --surface: #1E293B;
+    --border: #334155;
+    --text: #F1F5F9;
+    --text-muted: #94A3B8;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+    --shadow: 0 6px 20px rgba(0,0,0,0.4);
+    --shadow-lg: 0 16px 40px rgba(0,0,0,0.5);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Hind Siliguri', sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    color: var(--text);
+    background: var(--bg);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3, .heading { font-family: 'Plus Jakarta Sans', 'Hind Siliguri', sans-serif; font-weight: 700; line-height: 1.25; }
+
+  /* ---------- Top bar ---------- */
+  .topbar {
+    position: sticky; top: 0; z-index: 20;
+    background: linear-gradient(120deg, #F05340 0%, #FF7B6B 55%, #FFA24C 100%);
+    color: #fff;
+    padding: 18px 24px;
+    display: flex; align-items: center; gap: 16px;
+    box-shadow: var(--shadow);
+  }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .brand-logo {
+    width: 46px; height: 46px; border-radius: 14px;
+    background: rgba(255,255,255,0.18);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; backdrop-filter: blur(4px);
+    border: 1px solid rgba(255,255,255,0.3);
+  }
+  .brand-text h1 { font-size: 19px; color: #fff; letter-spacing: 0.01em; }
+  .brand-text p { font-size: 12.5px; color: rgba(255,255,255,0.9); font-weight: 500; }
+  .topbar-spacer { flex: 1; }
+  .theme-toggle {
+    background: rgba(255,255,255,0.18);
+    border: 1px solid rgba(255,255,255,0.3);
+    color: #fff; width: 42px; height: 42px; border-radius: 12px;
+    cursor: pointer; font-size: 18px; transition: all .2s;
+  }
+  .theme-toggle:hover { background: rgba(255,255,255,0.3); }
+
+  /* ---------- Layout ---------- */
+  .layout { display: flex; align-items: flex-start; gap: 24px; max-width: 1200px; margin: 0 auto; padding: 24px; }
+
+  .panel {
+    width: 320px; flex-shrink: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 22px;
+    box-shadow: var(--shadow-sm);
+    position: sticky; top: 96px;
+  }
+  .panel h2 { font-size: 15px; margin-bottom: 4px; }
+  .panel .sub { font-size: 12.5px; color: var(--text-muted); margin-bottom: 18px; }
+
+  .field { margin-bottom: 16px; }
+  .field label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 7px; color: var(--text); }
+  select, .num-input {
+    width: 100%; padding: 11px 12px; font-family: inherit; font-size: 14px;
+    background: var(--bg); color: var(--text);
+    border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+    cursor: pointer; transition: border-color .15s;
+  }
+  select:focus, .num-input:focus { outline: none; border-color: var(--primary); }
+
+  .chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    padding: 8px 12px; border-radius: 999px; font-size: 12.5px; font-weight: 600;
+    background: var(--bg); color: var(--text-muted);
+    border: 1.5px solid var(--border); cursor: pointer; transition: all .15s;
+  }
+  .chip:hover { border-color: var(--primary-light); color: var(--primary); }
+  .chip.active { background: rgba(240,83,64,0.10); border-color: var(--primary); color: var(--primary); }
+
+  .btn {
+    width: 100%; padding: 14px 20px; border-radius: var(--radius);
+    font-weight: 700; font-size: 15px; font-family: inherit; border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    transition: all .2s; letter-spacing: .01em;
+  }
+  .btn:hover { filter: brightness(1.06); transform: translateY(-1px); }
+  .btn:active { transform: translateY(0); filter: brightness(.97); }
+  .btn-primary { background: linear-gradient(to right, #F05340, #FF7B6B); color: #fff; box-shadow: 0 6px 18px rgba(240,83,64,.40); }
+  .btn-icon { width: 18px; height: 18px; flex-shrink: 0; }
+
+  .tip-box {
+    margin-top: 18px; padding: 13px 14px; border-radius: var(--radius-sm);
+    background: rgba(59,130,246,0.08); border: 1px solid rgba(59,130,246,0.2);
+    font-size: 12.5px; color: var(--text-muted); line-height: 1.6;
+  }
+  .tip-box b { color: var(--info); }
+
+  /* ---------- Main / feed ---------- */
+  .main { flex: 1; min-width: 0; }
+  .feed-head { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; flex-wrap: wrap; }
+  .feed-head h2 { font-size: 18px; }
+  .count-pill {
+    font-size: 12px; font-weight: 700; padding: 4px 11px; border-radius: 999px;
+    background: rgba(240,83,64,0.1); color: var(--primary);
+  }
+  .feed-head .spacer { flex: 1; }
+  .mini-btn {
+    font-family: inherit; font-size: 13px; font-weight: 600; padding: 9px 14px;
+    border-radius: var(--radius-sm); border: 1.5px solid var(--border);
+    background: var(--surface); color: var(--text); cursor: pointer; transition: all .15s;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .mini-btn:hover { border-color: var(--primary); color: var(--primary); }
+
+  .feed { display: flex; flex-direction: column; gap: 18px; }
+
+  .post-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); box-shadow: var(--shadow-sm);
+    overflow: hidden; animation: rise .35s ease both;
+  }
+  @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .post-card:hover { box-shadow: var(--shadow); }
+
+  .post-head {
+    display: flex; align-items: center; gap: 10px; padding: 14px 18px;
+    border-bottom: 1px solid var(--border); background: var(--bg-secondary);
+  }
+  .tone-badge { font-size: 12px; font-weight: 700; padding: 5px 12px; border-radius: 999px; color: #fff; }
+  .goal-badge { font-size: 11.5px; font-weight: 600; padding: 4px 10px; border-radius: 999px; background: var(--bg); border: 1px solid var(--border); color: var(--text-muted); }
+  .post-head .spacer { flex: 1; }
+  .idx { font-size: 12px; color: var(--text-muted); font-weight: 600; }
+
+  .post-body { padding: 18px 20px; }
+  .post-text { font-size: 15.5px; line-height: 1.85; white-space: pre-wrap; word-break: break-word; }
+  .post-hashtags { margin-top: 12px; font-size: 13.5px; color: var(--info); font-weight: 600; }
+
+  .post-actions {
+    display: flex; gap: 10px; padding: 12px 18px; border-top: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+  .act {
+    font-family: inherit; font-size: 13px; font-weight: 600; padding: 9px 14px;
+    border-radius: var(--radius-sm); border: 1.5px solid var(--border);
+    background: var(--surface); color: var(--text); cursor: pointer; transition: all .15s;
+    display: inline-flex; align-items: center; gap: 7px;
+  }
+  .act:hover { border-color: var(--primary); color: var(--primary); }
+  .act.copied { border-color: var(--success); color: var(--success); }
+  .act svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+  .empty {
+    text-align: center; padding: 60px 20px; color: var(--text-muted);
+    background: var(--surface); border: 1px dashed var(--border); border-radius: var(--radius-lg);
+  }
+  .empty .em { font-size: 44px; margin-bottom: 12px; }
+
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: #111827; color: #fff; padding: 12px 22px; border-radius: 999px;
+    font-size: 14px; font-weight: 600; box-shadow: var(--shadow-lg);
+    opacity: 0; pointer-events: none; transition: all .25s; z-index: 50;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  @media (max-width: 860px) {
+    .layout { flex-direction: column; padding: 16px; }
+    .panel { width: 100%; position: static; }
+    .brand-text h1 { font-size: 17px; }
+  }
+</style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-logo">🎨</div>
+      <div class="brand-text">
+        <h1>পোস্ট আইডিয়া জেনারেটর</h1>
+        <p>শিশুদের অনলাইন কোর্স (২.৫–১০ বছর) • টার্গেট: মায়েরা ২৫–৪৫</p>
+      </div>
+    </div>
+    <div class="topbar-spacer"></div>
+    <button class="theme-toggle" id="themeToggle" title="থিম পরিবর্তন">🌙</button>
+  </header>
+
+  <div class="layout">
+    <!-- Control Panel -->
+    <aside class="panel">
+      <h2>পোস্ট তৈরি করুন</h2>
+      <p class="sub">প্রতিবার নতুন, আলাদা টোন ও মানবিক অনুভূতিসহ পোস্ট আইডিয়া।</p>
+
+      <div class="field">
+        <label>পোস্টের উদ্দেশ্য</label>
+        <div class="chip-row" id="goalChips">
+          <button class="chip active" data-goal="all">সব</button>
+          <button class="chip" data-goal="awareness">সচেতনতা</button>
+          <button class="chip" data-goal="engagement">এনগেজমেন্ট</button>
+          <button class="chip" data-goal="enroll">ভর্তি/বিক্রি</button>
+          <button class="chip" data-goal="branding">ব্র্যান্ডিং</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>টোন</label>
+        <select id="toneSelect">
+          <option value="mix">মিক্সড — প্রতি পোস্ট আলাদা টোন</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>কতগুলো পোস্ট বানাবেন?</label>
+        <select id="countSelect" class="num-input">
+          <option value="1">১টি</option>
+          <option value="3" selected>৩টি</option>
+          <option value="5">৫টি</option>
+          <option value="7">৭টি (সপ্তাহের প্ল্যান)</option>
+        </select>
+      </div>
+
+      <button class="btn btn-primary" id="genBtn">
+        <svg class="btn-icon" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 3v3M12 18v3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M3 12h3M18 12h3M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/>
+        </svg>
+        পোস্ট বানান
+      </button>
+
+      <div class="tip-box">
+        <b>💡 টিপ:</b> এগুলো রেডি আইডিয়া — আপনার পেইজের নাম, অফার আর ছবি যোগ করে পোস্ট করুন। প্রতিটি পোস্ট আলাদা আবেগ ও ভয়েসে লেখা, তাই একঘেয়ে লাগবে না।
+      </div>
+    </aside>
+
+    <!-- Feed -->
+    <main class="main">
+      <div class="feed-head">
+        <h2>আপনার পোস্ট আইডিয়া</h2>
+        <span class="count-pill" id="countPill">০টি</span>
+        <div class="spacer"></div>
+        <button class="mini-btn" id="copyAllBtn">📋 সব কপি করুন</button>
+      </div>
+      <div class="feed" id="feed">
+        <div class="empty">
+          <div class="em">✨</div>
+          <p><b>বাম পাশ থেকে "পোস্ট বানান" চাপুন</b></p>
+          <p>প্রতিবার নতুন নতুন আইডিয়া তৈরি হবে।</p>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div class="toast" id="toast">কপি হয়েছে ✅</div>
+
+<script>
+/* ============================================================
+   কনটেন্ট ইঞ্জিন — শিশুদের অনলাইন কোর্স পেইজের জন্য
+   প্রতিটি টোন আলাদা, স্লট-ভিত্তিক টেমপ্লেট থেকে হাজারো
+   ইউনিক পোস্ট তৈরি হয়। ভাষা: বাংলা, ভয়েস: মায়েদের বন্ধু।
+   ============================================================ */
+
+// ---- স্লট পুল (এলোমেলোভাবে বসানো হয়) ----
+const POOL = {
+  skill: [
+    "ইংরেজি ছড়া ও গান", "রঙ ও আকৃতি চেনা", "বাংলা বর্ণমালা", "ইংরেজি Phonics",
+    "সংখ্যা গণনা ১–১০০", "সুন্দর হাতের লেখা", "ছবি আঁকা ও রঙ করা", "গল্প বলা ও কল্পনাশক্তি",
+    "ভালো আচরণ ও শিষ্টাচার", "মনে রাখার দক্ষতা", "ছোট ছোট বাক্য বলা ইংরেজিতে", "সৃজনশীল কারুকাজ"
+  ],
+  skill2: [
+    "আত্মবিশ্বাসে কথা বলা", "মনোযোগ ধরে রাখা", "নতুন শব্দ শেখা", "হাতের কাজ ও মোটর স্কিল",
+    "কল্পনা করে গল্প বানানো", "সংখ্যার খেলা", "রঙের জগৎ চেনা"
+  ],
+  pain: [
+    "সারাদিন মোবাইল/ইউটিউবে ডুবে থাকা", "লাজুক স্বভাব, অচেনা কারো সামনে কথা না বলা",
+    "পড়ায় একটুও মন না বসা", "একই জিনিস বারবার বলেও না শোনা",
+    "স্কুলে ভর্তির আগে প্রস্তুতির চিন্তা", "সারাক্ষণ জেদ আর কান্না",
+    "বাচ্চাকে সময় দেওয়ার মতো ফুরসত না পাওয়া"
+  ],
+  benefit: [
+    "খেলার ছলে শিখবে, তাই বিরক্ত হবে না", "স্ক্রিনের সামনে বসেও কিছু শিখছে — এই স্বস্তি",
+    "ঘরে বসেই, আপনার চোখের সামনে", "প্রতিদিন একটু একটু করে বদলে যাবে",
+    "আত্মবিশ্বাস বাড়বে, নতুন কিছু করতে ভয় পাবে না", "স্কুলের পড়া সহজ মনে হবে"
+  ],
+  age: ["২.৫–১০ বছর", "৩ বছরের ছোট্ট সোনা", "৪–৫ বছরের বাবু", "৬–৮ বছরের শিশু", "প্রি-স্কুল বয়সী বাচ্চা"],
+  time: ["দিনে মাত্র ২০ মিনিট", "রোজ ১৫ মিনিট", "সপ্তাহে ৩টি ছোট ক্লাস", "দিনে একবার, সকালে বা সন্ধ্যায়"],
+  cta: [
+    "কমেন্টে ❤️ লিখুন, আমরা ইনবক্সে ডিটেইল পাঠাব।",
+    "ফ্রি ডেমো ক্লাসের জন্য কমেন্টে \"ডেমো\" লিখুন।",
+    "ইনবক্সে মেসেজ দিন — আজই সিট বুক করুন।",
+    "আগ্রহী হলে কমেন্টে বাচ্চার বয়স লিখে জানান।",
+    "নিচের লিংকে ক্লিক করে রেজিস্ট্রেশন করুন।"
+  ],
+  feeling: [
+    "প্রতিটা মায়ের বুকের ভেতর একটাই স্বপ্ন — বাচ্চাটা যেন ভালো মানুষ হয়",
+    "সন্তানের ছোট্ট একটা \"পেরেছি মা!\" — এর চেয়ে বড় শান্তি আর কিছুতে নেই",
+    "আমরা জানি, বাচ্চার ভালোর জন্য আপনি কতটা ভাবেন",
+    "মা হিসেবে চিন্তা তো হয়ই — সময়টা ঠিকভাবে কাজে লাগছে তো?"
+  ]
+};
+
+function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+// {key} প্লেসহোল্ডার এলোমেলো মান দিয়ে পূরণ করে
+function fill(tpl){
+  return tpl.replace(/\{(\w+)\}/g, (m, key) => POOL[key] ? pick(POOL[key]) : m);
+}
+
+// ---- টোন সংজ্ঞা ----
+// goal: awareness | engagement | enroll | branding
+const TONES = [
+  {
+    id: "emotional", name: "আবেগঘন", color: "#EC4899", goals: ["awareness","branding","enroll"],
+    templates: [
+      "{feeling}।\n\nআজ যে বাচ্চাটা {skill} শিখছে, কাল সে-ই স্টেজে দাঁড়িয়ে সবাইকে চমকে দেবে। শুরুটা কিন্তু আজকের এই ছোট্ট মুহূর্ত থেকেই। 🌱\n\nআমাদের কোর্সে {age} খেলার ছলে শেখে — {benefit}।\n\n{cta}",
+      "রাতে বাচ্চা ঘুমিয়ে গেলে ওর মুখটার দিকে তাকিয়ে থাকেন, তাই না? মনে মনে ভাবেন — \"আমার সোনাটা যেন সবার সেরা হয়।\" 💛\n\nসেই স্বপ্নটা সত্যি করার প্রথম ধাপ হতে পারে {skill}। {time}, ঘরে বসেই।\n\n{cta}",
+      "বাচ্চার প্রথম নিজে নিজে {skill2} — সেই দৃশ্যটা কল্পনা করুন তো একবার। চোখে পানি চলে আসে, তাই না? 🥹\n\nআমরা প্রতিদিন এমন ছোট ছোট জয় তৈরি করি। আপনার সোনামণিও পারবে।\n\n{cta}"
+    ]
+  },
+  {
+    id: "story", name: "গল্প", color: "#8B5CF6", goals: ["branding","awareness","enroll"],
+    templates: [
+      "রিয়ার মা প্রথম দিন বলেছিলেন — \"আমার মেয়ে তো কারো সামনে মুখই খোলে না।\" 😔\n\nআজ, মাত্র কয়েক সপ্তাহ পর, সেই রিয়া নিজে থেকে ইংরেজিতে ছড়া বলে শোনায়। মায়ের চোখে আনন্দের পানি।\n\nএই বদলটা এসেছে {skill} আর {skill2}-এর মধ্য দিয়ে — {benefit}।\n\nআপনার বাচ্চার গল্পটাও এমন হতে পারে। {cta}",
+      "একজন মা ইনবক্সে লিখেছিলেন: \"ছেলেটা সারাদিন শুধু মোবাইল চায়, কিছুতেই {skill} শেখাতে পারছি না।\"\n\nআমরা বললাম — জোর করে নয়, খেলিয়ে শেখান। {time} যথেষ্ট।\n\nআজ তিনি বলছেন, বাচ্চা নিজেই ক্লাসের সময় হলে দৌড়ে আসে। 🥰\n\n{cta}",
+      "ছোট্ট আয়ানের গল্পটা বলি —\nশুরুতে {pain}। ওর মা হাল ছেড়েই দিয়েছিলেন প্রায়।\n\nতারপর সে ঘরে বসে রোজ একটু একটু করে {skill} শুরু করল। আজ সে ক্লাসের সবচেয়ে উৎসাহী বাচ্চা। ✨\n\nবদল সম্ভব — শুধু সঠিক শুরুটা দরকার। {cta}"
+    ]
+  },
+  {
+    id: "playful", name: "মজার", color: "#F59E0B", goals: ["engagement","branding"],
+    templates: [
+      "বাচ্চা যখন প্রশ্ন করে — \"মা, আকাশ নীল কেন?\" 🤔\nআর আপনি গুগল খোঁজেন চুপিচুপি... 😅\n\nআমরা এই কৌতূহলটাকেই শেখায় রূপান্তর করি! {age}-এর জন্য {skill} — একদম মজায় মজায়।\n\nআপনার বাচ্চা শেষ কোন প্রশ্নটা করে আপনাকে থামিয়ে দিয়েছে? কমেন্টে বলুন 👇",
+      "সকাল ৭টা: \"খাব না!\" 🙅\nবিকেল ৫টা: \"আরেকটু খেলি?\" 🙃\nআমাদের ক্লাসের সময়: \"মা, তাড়াতাড়ি! ক্লাস শুরু হয়ে যাবে!\" 🏃‍♂️💨\n\nহ্যাঁ, শেখা যখন মজার হয়, বাচ্চারা নিজেই টানে। {skill} নিয়ে আসছে সেই মজা।\n\nআপনার বাচ্চা কোনটায় বেশি ওস্তাদ — বায়না না দুষ্টুমি? 😄",
+      "মায়েদের গোপন সুপারপাওয়ার র‍্যাংকিং 🦸‍♀️:\n৩. এক হাতে রান্না, আরেক হাতে বাচ্চা\n২. বাচ্চার ৫০০টা \"কেন?\"-এর উত্তর দেওয়া\n১. বাচ্চাকে {skill2} শেখানোর সময় বের করা\n\n১ নম্বরটায় আমরা একটু সাহায্য করি? 😊 {time}, ঘরে বসেই।"
+    ]
+  },
+  {
+    id: "informative", name: "তথ্যমূলক", color: "#3B82F6", goals: ["awareness","branding"],
+    templates: [
+      "📌 জানেন কি? শিশুর মস্তিষ্কের ৯০% বিকাশ হয় ৫ বছর বয়সের মধ্যেই।\n\nমানে, এই সময়ে বাচ্চা যা শেখে তা সারাজীবন সাথে থাকে। তাই {age}-এর জন্য {skill} শুরুর একদম সঠিক সময় এখনই।\n\n🍼 দেরি নয়, শুরুটা হোক আজ থেকে। {cta}",
+      "শিশুকে শেখানোর ৩টি সহজ নিয়ম 👇\n\n১️⃣ জোর নয়, খেলার ছলে — {benefit}\n২️⃣ অল্প সময়, নিয়মিত — {time} যথেষ্ট\n৩️⃣ প্রশংসা করুন — প্রতিটা ছোট জয়ে হাততালি দিন 👏\n\nআমাদের {skill} কোর্স এই তিনটি নিয়ম মেনেই সাজানো।\n\nসেভ করে রাখুন, কাজে লাগবে ✅",
+      "❌ ভুল ধারণা: \"বাচ্চা ছোট, এখন শিখে কী হবে?\"\n✅ বাস্তবতা: ছোট বয়সেই ভিত্তি তৈরি হয়। {skill} এখন শিখলে স্কুলে গিয়ে সে এগিয়ে থাকবে।\n\n{age}-এর জন্য বিশেষভাবে সাজানো আমাদের কোর্স — {benefit}।\n\n{cta}"
+    ]
+  },
+  {
+    id: "question", name: "প্রশ্ন", color: "#06B6D4", goals: ["engagement"],
+    templates: [
+      "একটা সৎ প্রশ্ন, মায়েরা 🙋‍♀️\n\nআপনার বাচ্চা দিনে কত ঘণ্টা মোবাইল/টিভির সামনে থাকে?\n\n👉 ১ ঘণ্টার কম\n👉 ২–৩ ঘণ্টা\n👉 তার চেয়েও বেশি 😟\n\nকমেন্টে সংখ্যাটা লিখুন — আর জেনে নিন কীভাবে এই সময়টাকে {skill}-এ বদলে দেওয়া যায়।",
+      "বলুন তো মায়েরা —\nআপনার বাচ্চার সবচেয়ে বড় \"সমস্যা\" কোনটা? 🤍\n\n🔵 {pain}\n🟢 নতুন কিছু শিখতে চায় না\n🟡 মনোযোগ একদম নেই\n\nকমেন্টে জানান। আমরা প্রতিটা সমস্যার জন্য আলাদা টিপস দেব 👇",
+      "আজকের প্রশ্ন 💭\nআপনি ছোটবেলায় সবচেয়ে ভালো কী পারতেন — আঁকা, গান, নাকি গল্প বলা?\n\nআর আপনার বাচ্চা? সে কীসে আগ্রহ দেখায়?\n\nকমেন্টে দুটোই লিখুন 👇 — হয়তো ওর ভেতরের প্রতিভাটা {skill}-এর মধ্য দিয়েই বেরিয়ে আসবে ✨"
+    ]
+  },
+  {
+    id: "awarenessTone", name: "সচেতনতা", color: "#10B981", goals: ["awareness"],
+    templates: [
+      "মায়েরা, একটু থামুন আর ভাবুন 🌸\n\nবাচ্চার হাতে মোবাইল দিয়ে আমরা শান্তি পাই ঠিকই — কিন্তু {pain} কি ধীরে ধীরে অভ্যাসে পরিণত হচ্ছে না?\n\nসেই একই স্ক্রিন টাইমকে যদি {skill}-এ বদলে দেওয়া যায়? {benefit}।\n\nছোট্ট একটা সিদ্ধান্ত, বড় একটা পরিবর্তন। 💚",
+      "🚨 নীরব সমস্যা: {pain}।\n\nআজ হয়তো ছোট মনে হচ্ছে, কিন্তু বড় হয়ে এটাই বড় বাধা হয়ে দাঁড়ায়।\n\nসমাধান কঠিন নয় — {time} বাচ্চাকে {skill2}-এ ব্যস্ত রাখুন। খেলার ছলে, চাপ ছাড়াই।\n\nশেয়ার করুন, আরেকজন মায়ের কাজে লাগতে পারে 🤝",
+      "প্রিয় মা,\nবাচ্চাকে সবচেয়ে দামি উপহার কী দিতে পারেন জানেন? — সময় আর সঠিক শিক্ষা। 🎁\n\nদামি খেলনা নয়, বরং {skill} শেখানোর একটা সুযোগ ওর ভবিষ্যৎ বদলে দিতে পারে।\n\nভেবে দেখুন, শুরু আজ থেকেই হতে পারে। 🌟"
+    ]
+  },
+  {
+    id: "urgency", name: "জরুরি অফার", color: "#EF4444", goals: ["enroll"],
+    templates: [
+      "⏰ শেষ সুযোগ!\n\nএই ব্যাচে মাত্র কয়েকটি সিট বাকি। {age}-এর জন্য {skill} কোর্স — {benefit}।\n\n🎁 আজ রেজিস্ট্রেশন করলে ফ্রি ডেমো ক্লাস + বিশেষ ছাড়।\n\nদেরি করবেন না — সিট শেষ হলে পরের ব্যাচের জন্য অপেক্ষা করতে হবে।\n\n{cta}",
+      "🔥 নতুন ব্যাচ শুরু হচ্ছে!\n\n{pain} নিয়ে আর দুশ্চিন্তা নয়। {time} বাচ্চাকে দিন {skill}-এর জাদুকরী জগৎ।\n\n✅ অভিজ্ঞ টিচার\n✅ ঘরে বসে ক্লাস\n✅ প্রতি বাচ্চার আলাদা যত্ন\n\nআসন সীমিত — {cta}",
+      "🎉 বিশেষ ঘোষণা!\nপ্রথম ১০ জন মায়ের জন্য {skill} কোর্সে বিশেষ ছাড়।\n\n{benefit} — আর সেটা এখন আরও সাশ্রয়ীতে।\n\nঅফার সীমিত সময়ের জন্য। {cta}"
+    ]
+  },
+  {
+    id: "testimonial", name: "অভিভাবকের মতামত", color: "#14B8A6", goals: ["branding","enroll"],
+    templates: [
+      "💬 একজন খুশি মায়ের কথা —\n\n\"প্রথমে ভেবেছিলাম অনলাইনে বাচ্চা কী-ই বা শিখবে। কিন্তু এখন আমার মেয়ে নিজে থেকে {skill2} করে দেখায়! ওর আত্মবিশ্বাসটাই বদলে গেছে।\" 🥰\n\n— এমন শত শত মায়ের ভরসা আমরা।\n\nআপনিও যুক্ত হোন — {cta}",
+      "⭐⭐⭐⭐⭐\n\"{time} ক্লাস, কিন্তু ফলাফল অসাধারণ। ছেলে এখন {skill}-এ এত আগ্রহী যে নিজেই মনে করিয়ে দেয় ক্লাসের কথা।\"\n\nএই ভালোবাসাটাই আমাদের এগিয়ে নিয়ে যায় 💛\n\nআপনার বাচ্চার জন্যও শুরু করুন — {cta}",
+      "মায়েরা যা বলছেন 👇\n\n🌟 \"বাচ্চার {pain} ছিল, এখন অনেকটাই ঠিক।\"\n🌟 \"খেলার ছলে শেখে, তাই কোনো জোরাজুরি লাগে না।\"\n🌟 \"ঘরে বসেই, চোখের সামনে — এই স্বস্তিটা দারুণ।\"\n\nআপনিও এই পরিবারের অংশ হোন। {cta}"
+    ]
+  },
+  {
+    id: "tips", name: "প্যারেন্টিং টিপস", color: "#7C3AED", goals: ["awareness","engagement"],
+    templates: [
+      "🌟 আজকের প্যারেন্টিং টিপ\n\nবাচ্চাকে শেখানোর সময় \"ভুল হয়েছে\" না বলে বলুন — \"আরেকবার চেষ্টা করি চলো!\" 💪\n\nএই ছোট্ট বদলটা বাচ্চার আত্মবিশ্বাস কয়েকগুণ বাড়িয়ে দেয়।\n\nআমরা প্রতিটা ক্লাসে {skill} এভাবেই শেখাই — ভয় ছাড়া, ভালোবাসা দিয়ে।\n\nটিপটা ভালো লাগলে সেভ করুন 🔖",
+      "ঘরে বসেই বাচ্চার সাথে করতে পারেন এই ৩টি খেলা 🎲\n\n১. রঙ খুঁজে বের করা\n২. ছড়া মিলিয়ে বলা\n৩. গল্পের পরের অংশ নিজে বানানো\n\nএগুলোই বাচ্চার {skill2}-এর ভিত্তি গড়ে দেয়। আর আমাদের কোর্সে এমন মজার অ্যাক্টিভিটি প্রতিদিন। 🎨\n\nসেভ করে আজই একটা ট্রাই করুন ✅",
+      "📖 মনে রাখবেন মায়েরা —\nবাচ্চা তুলনা পছন্দ করে না। \"ওর মতো হও\" নয়, বলুন \"তুমি তোমার মতো সেরা।\" ❤️\n\nআত্মবিশ্বাসী বাচ্চাই দ্রুত শেখে। আমাদের {skill} কোর্স প্রতিটা বাচ্চাকে আলাদা করে দেখে।\n\nএকমত হলে একটা ❤️ দিন।"
+    ]
+  },
+  {
+    id: "milestone", name: "উৎসব/মাইলফলক", color: "#F97316", goals: ["branding","engagement"],
+    templates: [
+      "🎊 আনন্দের খবর!\nআমাদের ছোট্ট শিক্ষার্থীরা এই সপ্তাহে {skill} শেষ করে নতুন লেভেলে উঠেছে!\n\nপ্রতিটা বাচ্চার হাসিমুখই আমাদের আসল পুরস্কার 🏆\n\nআপনার সোনামণিও এই আনন্দের অংশ হতে পারে। {cta}",
+      "🌙 বিশেষ দিনে বিশেষ শুভেচ্ছা সব মা ও শিশুকে!\n\nএই দিনে বাচ্চার জন্য নিন সবচেয়ে সুন্দর উপহার — শেখার আনন্দ। {age}-এর জন্য {skill}।\n\nউৎসবের খুশি হোক শেখার খুশির সাথে 🎁✨\n\n{cta}",
+      "🎉 আমরা এখন {age}-এর শত শত পরিবারের পাশে!\n\nএই বিশ্বাসের জন্য প্রতিটা মাকে অসংখ্য ধন্যবাদ 🙏💛\n\nআপনার বাচ্চার শেখার যাত্রাও শুরু হোক আমাদের সাথে। {cta}"
+    ]
+  }
+];
+
+// ---- অ্যাপ স্টেট ----
+let currentGoal = "all";
+const HASHTAGS = "#শিশুশিক্ষা #অনলাইনকোর্স #KidsLearning #প্যারেন্টিং #মায়েদেরপছন্দ #EarlyLearning #বাচ্চাদেরকোর্স";
+
+// টোন সিলেক্ট ড্রপডাউন পূরণ
+const toneSelect = document.getElementById('toneSelect');
+TONES.forEach(t => {
+  const opt = document.createElement('option');
+  opt.value = t.id; opt.textContent = t.name;
+  toneSelect.appendChild(opt);
+});
+
+// goal অনুযায়ী প্রযোজ্য টোন
+function tonesForGoal(goal){
+  if(goal === "all") return TONES;
+  return TONES.filter(t => t.goals.includes(goal));
+}
+
+// একটি পোস্ট তৈরি
+function makePost(tone){
+  const tpl = pick(tone.templates);
+  return { tone, text: fill(tpl) };
+}
+
+// ব্যাচ তৈরি — টোন যতটা সম্ভব আলাদা রাখা হয়
+function generateBatch(){
+  const count = parseInt(document.getElementById('countSelect').value, 10);
+  const toneChoice = toneSelect.value;
+
+  let pool;
+  if(toneChoice === "mix"){
+    pool = tonesForGoal(currentGoal);
+  } else {
+    pool = TONES.filter(t => t.id === toneChoice);
+  }
+  if(pool.length === 0) pool = TONES;
+
+  const posts = [];
+  let bag = [];
+  let lastId = null;
+  for(let i=0;i<count;i++){
+    if(bag.length === 0){
+      bag = shuffle([...pool]);
+      // পরপর একই টোন এড়াতে
+      if(bag.length > 1 && bag[0].id === lastId) bag.push(bag.shift());
+    }
+    const tone = bag.shift();
+    lastId = tone.id;
+    posts.push(makePost(tone));
+  }
+  return posts;
+}
+
+function shuffle(a){
+  for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+
+// ---- রেন্ডার ----
+const feed = document.getElementById('feed');
+let posts = [];
+
+function goalLabel(tone){
+  const map = { awareness:"সচেতনতা", engagement:"এনগেজমেন্ট", enroll:"ভর্তি/বিক্রি", branding:"ব্র্যান্ডিং" };
+  return map[tone.goals[0]] || "পোস্ট";
+}
+
+function fullText(p){
+  return p.text + "\n\n" + HASHTAGS;
+}
+
+function render(){
+  document.getElementById('countPill').textContent = toBn(posts.length) + "টি";
+  if(posts.length === 0){
+    feed.innerHTML = `<div class="empty"><div class="em">✨</div><p><b>বাম পাশ থেকে "পোস্ট বানান" চাপুন</b></p><p>প্রতিবার নতুন নতুন আইডিয়া তৈরি হবে।</p></div>`;
+    return;
+  }
+  feed.innerHTML = "";
+  posts.forEach((p, i) => {
+    const card = document.createElement('div');
+    card.className = "post-card";
+    card.innerHTML = `
+      <div class="post-head">
+        <span class="tone-badge" style="background:${p.tone.color}">${p.tone.name}</span>
+        <span class="goal-badge">${goalLabel(p.tone)}</span>
+        <span class="spacer"></span>
+        <span class="idx">পোস্ট ${toBn(i+1)}</span>
+      </div>
+      <div class="post-body">
+        <div class="post-text">${escapeHtml(p.text)}</div>
+        <div class="post-hashtags">${HASHTAGS}</div>
+      </div>
+      <div class="post-actions">
+        <button class="act" data-act="copy" data-i="${i}">
+          <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          কপি করুন
+        </button>
+        <button class="act" data-act="regen" data-i="${i}">
+          <svg viewBox="0 0 24 24"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+          আরেকটা বানান
+        </button>
+      </div>`;
+    feed.appendChild(card);
+  });
+}
+
+// ---- ইউটিলিটি ----
+function toBn(n){
+  const d = ["০","১","২","৩","৪","৫","৬","৭","৮","৯"];
+  return String(n).replace(/\d/g, x => d[x]);
+}
+function escapeHtml(s){
+  return s.replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+}
+function copyText(text){
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    return navigator.clipboard.writeText(text);
+  }
+  const ta = document.createElement('textarea');
+  ta.value = text; ta.style.position='fixed'; ta.style.opacity='0';
+  document.body.appendChild(ta); ta.select();
+  try { document.execCommand('copy'); } catch(e){}
+  document.body.removeChild(ta);
+  return Promise.resolve();
+}
+let toastTimer;
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=> t.classList.remove('show'), 1800);
+}
+
+// ---- ইভেন্ট ----
+document.getElementById('genBtn').addEventListener('click', () => {
+  posts = generateBatch();
+  render();
+});
+
+feed.addEventListener('click', (e) => {
+  const btn = e.target.closest('.act');
+  if(!btn) return;
+  const i = parseInt(btn.dataset.i, 10);
+  if(btn.dataset.act === "copy"){
+    copyText(fullText(posts[i])).then(()=>{
+      btn.classList.add('copied');
+      btn.querySelector('svg').outerHTML = '<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>';
+      btn.childNodes[btn.childNodes.length-1].textContent = " কপি হয়েছে";
+      toast("পোস্ট কপি হয়েছে ✅");
+      setTimeout(()=> render(), 1400);
+    });
+  } else if(btn.dataset.act === "regen"){
+    posts[i] = makePost(posts[i].tone);
+    render();
+  }
+});
+
+document.getElementById('copyAllBtn').addEventListener('click', () => {
+  if(posts.length === 0){ toast("আগে পোস্ট বানান"); return; }
+  const all = posts.map((p, i) => `পোস্ট ${toBn(i+1)} — ${p.tone.name}\n\n${fullText(p)}`).join("\n\n──────────\n\n");
+  copyText(all).then(()=> toast("সব পোস্ট কপি হয়েছে ✅"));
+});
+
+// goal chips
+document.getElementById('goalChips').addEventListener('click', (e) => {
+  const chip = e.target.closest('.chip');
+  if(!chip) return;
+  document.querySelectorAll('#goalChips .chip').forEach(c => c.classList.remove('active'));
+  chip.classList.add('active');
+  currentGoal = chip.dataset.goal;
+});
+
+// theme toggle
+const themeToggle = document.getElementById('themeToggle');
+const htmlEl = document.documentElement;
+if(localStorage.getItem('theme') === 'dark' ||
+   (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)){
+  htmlEl.setAttribute('data-theme','dark');
+  themeToggle.textContent = '☀️';
+}
+themeToggle.addEventListener('click', () => {
+  const isDark = htmlEl.getAttribute('data-theme') === 'dark';
+  htmlEl.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  themeToggle.textContent = isDark ? '🌙' : '☀️';
+  localStorage.setItem('theme', isDark ? 'light' : 'dark');
+});
+
+// প্রথমবার একটা ব্যাচ দেখাই
+posts = generateBatch();
+render();
+</script>
+</body>
+</html>
