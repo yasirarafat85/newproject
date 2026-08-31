@@ -1,0 +1,9 @@
+{
+  "name": "gp-bill-tracker",
+  "version": "1.0.0",
+  "private": true,
+  "description": "GP Bill Tracker — Neon (Postgres) + Vercel",
+  "dependencies": {
+    "@neondatabase/serverless": "^0.10.4"
+  }
+}
