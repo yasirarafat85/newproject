@@ -2,8 +2,5 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "functions": {
     "api/*.js": { "maxDuration": 30 }
-  },
-  "crons": [
-    { "path": "/api/cron-backup", "schedule": "0 2 * * *" }
-  ]
+  }
 }

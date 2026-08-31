@@ -1666,6 +1666,7 @@ function toast(msg,type=''){
 ══════════════════════════════════════════ */
 loadData(true);
 loadBalance();
+fetch('/api/auto-backup').catch(()=>{});   // throttled daily backup (server-side 20h check)
 setInterval(()=>loadData(true), 60000);
 setInterval(loadBalance, 30000);
 </script>
