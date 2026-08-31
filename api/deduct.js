@@ -1,6 +1,6 @@
 // POST /api/deduct { amount, companyKey }  (deductBalance)
-// Public: triggered when a user marks a bill as paid (auto-deduct) and by admin manual deduct.
-const { sql, ensureSchema, body } = require('./_db');
+// Public: auto-deduct on bill payment, and admin manual deduct.
+const { sql, ensureSchema, authAdmin, body, logActivity } = require('./_db');
 
 module.exports = async (req, res) => {
   try {
@@ -14,6 +14,10 @@ module.exports = async (req, res) => {
       await sql`INSERT INTO company_spending (company, spent) VALUES (${companyKey}, ${amount})
                 ON CONFLICT (company) DO UPDATE SET spent = company_spending.spent + ${amount}`;
     }
+    // manual deducts carry a companyKey like "manual_<note>"; log who when known
+    const who = await authAdmin(req).catch(() => null);
+    const isManual = companyKey.indexOf('manual_') === 0;
+    await logActivity(who || 'public', isManual ? 'manual_deduct' : 'auto_deduct', '৳' + amount + (companyKey ? ' (' + companyKey + ')' : ''));
     res.status(200).json({ success: true, balance: newBal });
   } catch (e) {
     res.status(200).json({ success: false, error: String(e) });

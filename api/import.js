@@ -1,7 +1,7 @@
 // POST /api/import { rows, sheetName }  (admin)  (importCSVToSheet)
 // rows: array of [sl, mobile, name, dept, bill, status]
 // Replaces all rows for that company+period.
-const { sql, ensureSchema, checkAdmin, parseSheetName, body } = require('./_db');
+const { sql, ensureSchema, authAdmin, parseSheetName, body, logActivity } = require('./_db');
 
 function num(v) {
   const n = parseFloat(String(v == null ? '' : v).replace(/[^0-9.]/g, ''));
@@ -11,7 +11,8 @@ function num(v) {
 module.exports = async (req, res) => {
   try {
     await ensureSchema();
-    if (!checkAdmin(req)) return res.status(401).json({ success: false, error: 'unauthorized' });
+    const who = await authAdmin(req);
+    if (!who) return res.status(401).json({ success: false, error: 'unauthorized' });
     const { rows, sheetName } = body(req);
     const p = parseSheetName(sheetName);
     if (!p) return res.status(400).json({ success: false, error: 'invalid sheet name' });
@@ -30,6 +31,7 @@ module.exports = async (req, res) => {
       await sql.transaction(queries);
       added += slice.length;
     }
+    await logActivity(who, 'import', sheetName + ' (' + added + ' rows)');
     res.status(200).json({ success: true, rowsAdded: added, sheetName });
   } catch (e) {
     res.status(200).json({ success: false, error: String(e) });

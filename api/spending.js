@@ -1,6 +1,6 @@
 // GET  /api/spending                 -> { success, data:[{company,spent}] }  (getCompanySpending)
 // POST /api/spending { company }      -> reset that company's spend (admin)   (resetCompanySpending)
-const { sql, ensureSchema, checkAdmin, body } = require('./_db');
+const { sql, ensureSchema, authAdmin, body, logActivity } = require('./_db');
 
 module.exports = async (req, res) => {
   try {
@@ -13,9 +13,13 @@ module.exports = async (req, res) => {
       });
     }
     if (req.method === 'POST') {
-      if (!checkAdmin(req)) return res.status(401).json({ success: false, error: 'unauthorized' });
+      const who = await authAdmin(req);
+      if (!who) return res.status(401).json({ success: false, error: 'unauthorized' });
       const company = body(req).company;
-      if (company) await sql`UPDATE company_spending SET spent=0 WHERE company=${company}`;
+      if (company) {
+        await sql`UPDATE company_spending SET spent=0 WHERE company=${company}`;
+        await logActivity(who, 'spending_reset', String(company));
+      }
       return res.status(200).json({ success: true });
     }
     res.status(405).json({ success: false, error: 'method not allowed' });
