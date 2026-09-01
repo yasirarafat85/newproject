@@ -356,12 +356,13 @@ body {
   border:1px solid var(--border); padding:9px 12px; border-radius:var(--r-sm);
   font-family:var(--font); font-size:14px; font-weight:600; flex:1; min-width:0; overflow:hidden;
 }
-.chip.ph { color:var(--blue);    border-color:rgba(37,99,235,.22);  background:var(--blue-soft); }
+.chip.ph { color:var(--blue);    border-color:rgba(37,99,235,.22);  background:var(--blue-soft); flex:1 1 100%; font-size:15.5px; letter-spacing:.4px; }
 .chip.am { color:var(--green-2); border-color:rgba(16,185,129,.25); background:var(--green-soft); }
-.chip.dp { color:var(--purple);  border-color:rgba(139,92,246,.25); background:var(--purple-soft); flex:none; }
-.chip.co { color:var(--amber);   border-color:rgba(245,158,11,.25); background:var(--amber-soft); flex:none; font-size:12.5px; }
+.chip.dp { color:var(--purple);  border-color:rgba(139,92,246,.25); background:var(--purple-soft); flex:none; max-width:100%; }
+.chip.co { color:var(--amber);   border-color:rgba(245,158,11,.25); background:var(--amber-soft); flex:none; max-width:100%; font-size:12.5px; }
 .chip .ci { font-size:14px; flex-shrink:0; }
 .chip .cv { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.chip.ph .cv { overflow:visible; text-overflow:clip; }  /* মোবাইল নম্বর সবসময় পুরো দেখাবে */
 
 .btn-row { display:flex; gap:10px; }
 .cta-btn {
