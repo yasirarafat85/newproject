@@ -194,9 +194,29 @@ final class Request
         $this->routeParams = $params;
     }
 
+    /**
+     * URL পথ থেকে আসা প্যারামিটার (যেমน /agent/tickets/{id})।
+     *
+     * ইচ্ছে করেই input()/query() থেকে আলাদা রাখা হয়েছে: query string
+     * দিয়ে যাতে কেউ `?id=...` পাঠিয়ে পথের আসল আইডি ঢেকে দিতে না পারে।
+     */
     public function param(string $key, mixed $default = null): mixed
     {
         return $this->routeParams[$key] ?? $default;
+    }
+
+    public function paramInt(string $key, int $default = 0): int
+    {
+        $value = $this->routeParams[$key] ?? null;
+
+        return is_numeric($value) ? (int) $value : $default;
+    }
+
+    public function paramString(string $key, string $default = ''): string
+    {
+        $value = $this->routeParams[$key] ?? null;
+
+        return is_string($value) ? $value : $default;
     }
 
     public function params(): array

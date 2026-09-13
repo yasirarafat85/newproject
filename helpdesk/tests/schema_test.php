@@ -8,15 +8,13 @@ declare(strict_types=1);
  *        ভুল ক্রমে টেবিল তৈরি · ডুপ্লিকেট কনস্ট্রেইন্ট নাম।
  */
 
-require __DIR__ . '/../app/Core/Autoloader.php';
-Autoloader::register(dirname(__DIR__));
+require __DIR__ . '/support/bootstrap.php';
+require __DIR__ . '/support/ddl.php';
 
 use App\Core\Config;
 use App\Core\Env;
 use App\Services\Installer;
 
-Env::load(dirname(__DIR__) . '/.env');
-Config::setPath(dirname(__DIR__) . '/config');
 
 $sql = (string) file_get_contents(dirname(__DIR__) . '/database/schema.sql');
 $method = new ReflectionMethod(Installer::class, 'splitStatements');
@@ -45,8 +43,8 @@ foreach ($statements as $index => $statement) {
     $indexed[$table] = [];
     $order[$table] = $index;
 
-    foreach (preg_split("/,\n/", $body) ?: [] as $line) {
-        $line = trim($line);
+    foreach (ddl_split_columns($body) as $line) {
+        $line = trim(preg_replace('/\s+/', ' ', $line) ?? $line);
 
         if (preg_match('/^(PRIMARY KEY|UNIQUE KEY|KEY|FULLTEXT KEY|CONSTRAINT)\b/i', $line) === 1) {
             continue;   // কলাম নয়, ইনডেক্স/কনস্ট্রেইন্ট

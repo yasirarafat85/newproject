@@ -83,9 +83,10 @@ final class Session
     }
 
     /** লগইন/লগআউটে সেশন ফিক্সেশন ঠেকায়। */
+    /** হেডার পাঠানোর পর আইডি বদলানো যায় না — তখন ওয়ার্নিং না দিয়ে চুপচাপ বাদ দিই। */
     public static function regenerate(): void
     {
-        if (session_status() === PHP_SESSION_ACTIVE) {
+        if (session_status() === PHP_SESSION_ACTIVE && !headers_sent()) {
             session_regenerate_id(true);
         }
     }
@@ -93,8 +94,6 @@ final class Session
     public static function invalidate(): void
     {
         $_SESSION = [];
-        if (session_status() === PHP_SESSION_ACTIVE) {
-            session_regenerate_id(true);
-        }
+        self::regenerate();
     }
 }

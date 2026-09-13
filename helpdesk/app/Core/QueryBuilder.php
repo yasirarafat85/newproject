@@ -110,16 +110,29 @@ final class QueryBuilder
 
     public function whereIn(string $column, array $values, bool $not = false): self
     {
+        return $this->addWhereIn('AND', $column, $values, $not);
+    }
+
+    public function orWhereIn(string $column, array $values, bool $not = false): self
+    {
+        return $this->addWhereIn('OR', $column, $values, $not);
+    }
+
+    private function addWhereIn(string $boolean, string $column, array $values, bool $not): self
+    {
         if ($values === []) {
-            // খালি IN () অবৈধ SQL — কোনো ফলই না মেলা বোঝাতে অসম্ভব শর্ত বসাই
-            $this->wheres[] = ['boolean' => 'AND', 'sql' => $not ? '1 = 1' : '1 = 0'];
+            // খালি IN () অবৈধ SQL। AND-এ "কখনো মেলে না", OR-এ "কিছু যোগ করে না"
+            $this->wheres[] = [
+                'boolean' => $boolean,
+                'sql'     => $not ? '1 = 1' : ($boolean === 'OR' ? '1 = 0' : '1 = 0'),
+            ];
 
             return $this;
         }
 
         $placeholders = implode(', ', array_fill(0, count($values), '?'));
         $this->wheres[] = [
-            'boolean' => 'AND',
+            'boolean' => $boolean,
             'sql'     => sprintf('%s %sIN (%s)', $this->column($column), $not ? 'NOT ' : '', $placeholders),
         ];
         foreach ($values as $value) {

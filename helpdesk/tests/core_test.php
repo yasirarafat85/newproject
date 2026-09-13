@@ -1,8 +1,7 @@
 <?php
 declare(strict_types=1);
 
-require __DIR__ . '/../app/Core/Autoloader.php';
-Autoloader::register(dirname(__DIR__));
+require __DIR__ . '/support/bootstrap.php';
 
 use App\Core\Config;
 use App\Core\Env;
@@ -12,8 +11,6 @@ use App\Core\Str;
 use App\Core\Validator;
 use App\Services\Installer;
 
-Env::load(dirname(__DIR__) . '/.env');
-Config::setPath(dirname(__DIR__) . '/config');
 
 $pass = 0; $fail = 0;
 function check(string $label, mixed $actual, mixed $expected): void {
