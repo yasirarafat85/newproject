@@ -1,0 +1,81 @@
+/* =====================================================================
+   HelpDesk — ডিজাইন টোকেন
+   সব রং, ব্যবধান ও ছায়া এখানেই সংজ্ঞায়িত। কম্পোনেন্ট CSS-এ কখনো
+   সরাসরি hex লেখা হয় না — শুধু var() ব্যবহার হয়।
+   ===================================================================== */
+
+:root {
+  /* ব্র্যান্ড */
+  --primary:        #F05340;
+  --primary-dark:   #D43F2D;
+  --primary-light:  #FF7B6B;
+  --primary-soft:   rgba(240, 83, 64, .10);
+
+  /* নিউট্রাল — লাইট মোড */
+  --bg:             #FFFFFF;
+  --bg-secondary:   #F9FAFB;
+  --surface:        #FFFFFF;
+  --surface-2:      #F3F4F6;
+  --border:         #E5E7EB;
+  --border-strong:  #D1D5DB;
+  --text:           #111827;
+  --text-muted:     #6B7280;
+  --text-faint:     #9CA3AF;
+
+  /* সেমান্টিক */
+  --success:        #10B981;
+  --success-soft:   rgba(16, 185, 129, .12);
+  --warning:        #F59E0B;
+  --warning-soft:   rgba(245, 158, 11, .12);
+  --danger:         #EF4444;
+  --danger-soft:    rgba(239, 68, 68, .12);
+  --info:           #3B82F6;
+  --info-soft:      rgba(59, 130, 246, .12);
+
+  /* ব্যবধান — ৮-এর গুণিতক */
+  --sp-1: 4px;  --sp-2: 8px;  --sp-3: 12px; --sp-4: 16px;
+  --sp-5: 24px; --sp-6: 32px; --sp-7: 48px; --sp-8: 64px;
+
+  /* আকৃতি */
+  --radius-sm: 6px;
+  --radius:    10px;
+  --radius-lg: 16px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.08);
+  --shadow:    0 4px 12px rgba(0,0,0,.10);
+  --shadow-lg: 0 10px 30px rgba(0,0,0,.15);
+
+  /* টাইপোগ্রাফি */
+  --font-body:    'Inter', 'Noto Sans Bengali', system-ui, -apple-system, sans-serif;
+  --font-heading: 'Plus Jakarta Sans', 'Noto Sans Bengali', system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
+
+  /* লেআউট */
+  --sidebar-w: 260px;
+  --topbar-h:  64px;
+}
+
+[data-theme="dark"] {
+  --bg:             #0F172A;
+  --bg-secondary:   #1E293B;
+  --surface:        #1E293B;
+  --surface-2:      #273549;
+  --border:         #334155;
+  --border-strong:  #475569;
+  --text:           #F1F5F9;
+  --text-muted:     #94A3B8;
+  --text-faint:     #64748B;
+
+  --primary:        #FF7B6B;
+  --primary-dark:   #F05340;
+  --primary-light:  #FFA294;
+  --primary-soft:   rgba(255, 123, 107, .14);
+
+  --success-soft:   rgba(16, 185, 129, .18);
+  --warning-soft:   rgba(245, 158, 11, .18);
+  --danger-soft:    rgba(239, 68, 68, .18);
+  --info-soft:      rgba(59, 130, 246, .18);
+
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.30);
+  --shadow:    0 4px 12px rgba(0,0,0,.40);
+  --shadow-lg: 0 10px 30px rgba(0,0,0,.55);
+}

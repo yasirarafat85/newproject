@@ -1,0 +1,32 @@
+# ---- সব রিকোয়েস্ট index.php-তে ----
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # সত্যিকারের ফাইল/ফোল্ডার হলে (assets) সরাসরি সার্ভ হবে
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    RewriteRule ^ index.php [L]
+</IfModule>
+
+# ---- নিরাপত্তা হেডার ----
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+    # HTTPS-এ চালু করুন:
+    # Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+</IfModule>
+
+# ডিরেক্টরি লিস্টিং বন্ধ
+Options -Indexes
+
+# .env বা ব্যাকআপ ফাইল কখনো সার্ভ হবে না (এগুলো এমনিতেই ওয়েব রুটের বাইরে)
+<FilesMatch "^\.|\.(env|sql|log|md|json|lock)$">
+    Require all denied
+</FilesMatch>
+
+# index.php ছাড়া অন্য কিছু ডিফল্ট হিসেবে চলবে না
+DirectoryIndex index.php

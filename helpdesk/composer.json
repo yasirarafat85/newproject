@@ -1,0 +1,21 @@
+{
+    "name": "helpdesk/helpdesk",
+    "description": "Native PHP helpdesk ticketing system — MySQL, vanilla JS, XAMPP ready",
+    "type": "project",
+    "license": "MIT",
+    "require": {
+        "php": ">=8.2",
+        "ext-pdo": "*",
+        "ext-mbstring": "*",
+        "ext-json": "*",
+        "phpmailer/phpmailer": "^6.9",
+        "webklex/php-imap": "^5.5",
+        "ezyang/htmlpurifier": "^4.17"
+    },
+    "autoload": {
+        "psr-4": { "App\\": "app/" },
+        "files": [ "app/Helpers/functions.php" ]
+    },
+    "config": { "optimize-autoloader": true },
+    "minimum-stability": "stable"
+}
