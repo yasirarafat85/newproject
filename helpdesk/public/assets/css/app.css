@@ -490,3 +490,93 @@ tr.row-late td { box-shadow: inset 3px 0 0 var(--danger); }
   .ticket-side { position: static; flex-direction: column; }
   .ticket-grid > .ticket-side:first-of-type { flex-direction: column; }
 }
+
+/* ---- অ্যাডমিন প্যানেল ---- */
+.admin-head {
+  display: flex; align-items: flex-start; gap: var(--sp-4);
+  margin-bottom: var(--sp-4); flex-wrap: wrap;
+}
+.admin-head h2 { font-size: 19px; margin: 0 0 4px; }
+.admin-head p { margin: 0; font-size: 13.5px; max-width: 62ch; }
+.admin-head > a { margin-left: auto; flex-shrink: 0; }
+
+.admin-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: var(--sp-4); }
+
+/* সুইচ */
+.toggle {
+  display: flex; align-items: flex-start; gap: 11px;
+  cursor: pointer; padding: 9px 0; user-select: none;
+}
+.toggle input { position: absolute; opacity: 0; width: 0; height: 0; }
+.toggle-track {
+  width: 40px; height: 23px; border-radius: 999px; flex-shrink: 0;
+  background: var(--border-strong); position: relative;
+  transition: background .18s ease; margin-top: 1px;
+}
+.toggle-thumb {
+  position: absolute; top: 3px; left: 3px;
+  width: 17px; height: 17px; border-radius: 50%;
+  background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.25);
+  transition: transform .18s ease;
+}
+.toggle input:checked + .toggle-track { background: var(--primary); }
+.toggle input:checked + .toggle-track .toggle-thumb { transform: translateX(17px); }
+.toggle input:focus-visible + .toggle-track { outline: 2px solid var(--primary); outline-offset: 2px; }
+.toggle-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.toggle-label { font-size: 14px; font-weight: 500; color: var(--text); }
+.toggle-hint { font-size: 12.5px; color: var(--text-muted); }
+
+/* পারমিশন ম্যাট্রিক্স */
+.perm-group + .perm-group { margin-top: var(--sp-5); }
+.perm-group-head {
+  display: flex; align-items: center; gap: 10px;
+  padding-bottom: 8px; margin-bottom: 10px; border-bottom: 1px solid var(--border);
+}
+.perm-group-head h4 { font-size: 14px; margin: 0; }
+.perm-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 2px 20px; }
+.perm-item { display: flex; align-items: flex-start; gap: 9px; padding: 6px 0; cursor: pointer; }
+.perm-item input { margin-top: 3px; accent-color: var(--primary); width: 15px; height: 15px; flex-shrink: 0; }
+.perm-item .code { font-family: var(--font-mono); font-size: 11px; color: var(--text-faint); display: block; }
+.perm-item .name { font-size: 13.5px; }
+.perm-toolbar { display: flex; gap: 8px; margin-left: auto; }
+.perm-toolbar button {
+  background: none; border: none; cursor: pointer; padding: 2px 6px;
+  font-family: var(--font-body); font-size: 12px; color: var(--primary);
+}
+.perm-toolbar button:hover { text-decoration: underline; }
+
+/* চেকবক্স তালিকা (ডিপার্টমেন্ট/টিম সদস্য) */
+.check-list {
+  max-height: 280px; overflow-y: auto;
+  border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 6px 12px; background: var(--bg-secondary);
+}
+.check-row { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--border); }
+.check-row:last-child { border-bottom: none; }
+.check-row input[type="checkbox"] { accent-color: var(--primary); width: 15px; height: 15px; }
+.check-row label { font-size: 13.5px; margin: 0; cursor: pointer; font-weight: 500; }
+.check-row .spacer { margin-left: auto; }
+.check-row .sub { font-size: 12px; color: var(--text-faint); }
+
+/* স্ট্যাটাস পিল */
+.pill {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 11.5px; font-weight: 600; padding: 3px 9px; border-radius: 999px;
+}
+.pill-on  { background: var(--success-soft); color: var(--success); }
+.pill-off { background: var(--surface-2);    color: var(--text-muted); }
+.pill-warn{ background: var(--warning-soft); color: var(--warning); }
+.pill-key { background: var(--primary-soft); color: var(--primary); }
+
+.row-actions { display: flex; gap: 6px; justify-content: flex-end; }
+.row-actions form { display: inline; }
+.link-danger { color: var(--danger); font-size: 13px; background: none; border: none; cursor: pointer; font-family: var(--font-body); padding: 4px 8px; }
+.link-danger:hover { text-decoration: underline; }
+
+/* হেলথ চেক */
+.health-row { display: flex; align-items: center; gap: 11px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.health-row:last-child { border-bottom: none; }
+.health-row .mark { width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+.health-row .mark.ok { background: var(--success-soft); color: var(--success); }
+.health-row .mark.no { background: var(--warning-soft); color: var(--warning); }
+.health-row .hint { margin-left: auto; font-size: 12px; color: var(--text-faint); text-align: right; }

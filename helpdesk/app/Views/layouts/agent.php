@@ -16,14 +16,21 @@ $navMain = [
 ];
 
 $navAdmin = [
+    ['/admin',             'অ্যাডমিন হোম',  '<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>', null],
     ['/admin/agents',      'এজেন্ট',        '<path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 00-3-3.87"/>', 'admin.agents'],
     ['/admin/departments', 'ডিপার্টমেন্ট',  '<path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 21v-6h6v6"/>', 'admin.departments'],
-    ['/admin/sla',         'SLA ও সময়সূচি', '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>', 'admin.sla'],
+    ['/admin/teams',       'টিম',           '<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>', 'admin.teams'],
+    ['/admin/roles',       'রোল ও পারমিশন', '<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>', 'admin.roles'],
+    ['/admin/topics',      'হেল্প টপিক',    '<path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>', 'admin.topics'],
+    ['/admin/logs',        'অ্যাক্টিভিটি লগ', '<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/>', 'admin.logs'],
     ['/admin/settings',    'সেটিংস',        '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06A1.65 1.65 0 0015 19.4a1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.6 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09A1.65 1.65 0 0015 4.6a1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9c.14.35.4.64.73.84.3.19.65.3 1 .31H21a2 2 0 010 4h-.09c-.35 0-.7.11-1 .31z"/>', 'admin.settings'],
 ];
 
+// ড্যাশবোর্ড লিংকগুলো শুধু হুবহু মিললেই সক্রিয়, নইলে সব সাব-পাতাতেই সক্রিয় দেখাত
 $isActive = static function (string $item) use ($path): bool {
-    return $item === '/agent' ? $path === '/agent' : str_starts_with($path, $item);
+    return in_array($item, ['/agent', '/admin'], true)
+        ? $path === $item
+        : str_starts_with($path, $item);
 };
 ?>
 <!doctype html>
@@ -49,7 +56,11 @@ $isActive = static function (string $item) use ($path): bool {
             <?php endforeach; ?>
 
             <?php
-            $adminItems = array_filter($navAdmin, static fn (array $item): bool => Auth::hasPermission($item[3]));
+            // পারমিশন null মানে "অ্যাডমিন প্যানেলে ঢুকতে পারলেই দেখা যাবে"
+            $adminItems = array_filter(
+                $navAdmin,
+                static fn (array $item): bool => $item[3] === null || Auth::hasPermission($item[3])
+            );
             ?>
             <?php if ($adminItems !== []): ?>
                 <div class="nav-section small-label">অ্যাডমিন</div>

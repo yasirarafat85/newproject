@@ -181,7 +181,8 @@ Auth::loginAgent($limitedId);
 Auth::flush();
 
 check('নিজের নয় এমন টিকেট দেখা যায় না', statusOf(call($router, 'GET', '/agent/tickets/' . $ticketId)), 403);
-check('অ্যাডমিন প্যানেল বন্ধ', statusOf(call($router, 'GET', '/admin/agents')), 404);
+// রুটটি এখন আছে (P2), তাই "নেই" নয় — "অনুমতি নেই"
+check('অ্যাডমিন প্যানেল বন্ধ', statusOf(call($router, 'GET', '/admin/agents')), 403);
 
 QueryBuilder::table('tickets')->where('id', $ticketId)->update(['assigned_agent_id' => $limitedId]);
 check('নিজের অ্যাসাইনড টিকেট দেখা যায়', statusOf(call($router, 'GET', '/agent/tickets/' . $ticketId)), 200);

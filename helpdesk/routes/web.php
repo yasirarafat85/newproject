@@ -14,6 +14,14 @@ declare(strict_types=1);
 use App\Controllers\Agent\AuthController as AgentAuthController;
 use App\Controllers\Agent\DashboardController;
 use App\Controllers\Agent\TicketController as AgentTicketController;
+use App\Controllers\Admin\ActivityLogController;
+use App\Controllers\Admin\AgentController;
+use App\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Controllers\Admin\DepartmentController;
+use App\Controllers\Admin\HelpTopicController;
+use App\Controllers\Admin\RoleController;
+use App\Controllers\Admin\SettingController;
+use App\Controllers\Admin\TeamController;
 use App\Controllers\AttachmentController;
 use App\Controllers\Client\AuthController as ClientAuthController;
 use App\Controllers\Client\HomeController;
@@ -96,5 +104,29 @@ $router->group([
     'prefix'     => '/admin',
     'middleware' => [VerifyCsrf::class, ShareViewData::class, AuthAgent::class, RequireAdmin::class],
 ], function (Router $r): void {
-    // P2-তে পূরণ হবে
+    $r->get('', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
+
+    // প্রতিটি সম্পদে একই প্যাটার্ন: তালিকা · নতুন · সংরক্ষণ · সম্পাদনা · হালনাগাদ · মুছে ফেলা
+    // "/new" সবসময় "/{id}" এর আগে, নইলে "new" একটি আইডি হিসেবে ধরা পড়বে
+    $resources = [
+        'agents'      => AgentController::class,
+        'departments' => DepartmentController::class,
+        'teams'       => TeamController::class,
+        'roles'       => RoleController::class,
+        'topics'      => HelpTopicController::class,
+    ];
+
+    foreach ($resources as $slug => $controller) {
+        $r->get('/' . $slug, [$controller, 'index'])->name('admin.' . $slug);
+        $r->get('/' . $slug . '/new', [$controller, 'createForm']);
+        $r->post('/' . $slug, [$controller, 'store']);
+        $r->get('/' . $slug . '/{id}/edit', [$controller, 'editForm']);
+        $r->post('/' . $slug . '/{id}', [$controller, 'update']);
+        $r->post('/' . $slug . '/{id}/delete', [$controller, 'destroy']);
+    }
+
+    $r->get('/settings', [SettingController::class, 'index'])->name('admin.settings');
+    $r->post('/settings', [SettingController::class, 'update']);
+
+    $r->get('/logs', [ActivityLogController::class, 'index'])->name('admin.logs');
 });

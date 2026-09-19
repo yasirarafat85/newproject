@@ -14,6 +14,7 @@ $suites = [
     'sanitizer_test.php' => 'HTML স্যানিটাইজার',
     'ticket_test.php' => 'টিকেট লাইফসাইকেল',
     'http_test.php'   => 'রাউট ও অনুমতি',
+    'admin_test.php'  => 'অ্যাডমিন প্যানেল',
 ];
 
 $failed = [];

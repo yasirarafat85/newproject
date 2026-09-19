@@ -61,7 +61,7 @@ final class QueryBuilder
         $this->joins[] = sprintf(
             '%s JOIN %s ON %s %s %s',
             $type,
-            $this->identifier($table),
+            $this->tableRef($table),
             $this->column($first),
             $this->operator($operator),
             $this->column($second)
@@ -364,6 +364,19 @@ final class QueryBuilder
         }
 
         return '`' . $name . '`';
+    }
+
+    /**
+     * JOIN-এর টেবিল, প্রয়োজনে alias সহ:  "departments AS parent"।
+     * সেল্ফ-জয়েনে (যেমন প্যারেন্ট ডিপার্টমেন্ট) alias ছাড়া উপায় নেই।
+     */
+    private function tableRef(string $name): string
+    {
+        if (preg_match('/^([A-Za-z_][A-Za-z0-9_]*)\s+AS\s+([A-Za-z_][A-Za-z0-9_]*)$/i', trim($name), $matches) === 1) {
+            return $this->identifier($matches[1]) . ' AS ' . $this->identifier($matches[2]);
+        }
+
+        return $this->identifier($name);
     }
 
     /** `table.column`, `column` অথবা `column AS alias` — সবই হোয়াইটলিস্ট করা। */
