@@ -102,6 +102,33 @@ final class Database
         return (int) self::pdo()->lastInsertId();
     }
 
+    public static function driver(): string
+    {
+        return (string) self::pdo()->getAttribute(PDO::ATTR_DRIVER_NAME);
+    }
+
+    /**
+     * ট্রানজ্যাকশনের ভেতরে একটি রো লক করে পড়ে।
+     *
+     * দুজন এজেন্ট একই মুহূর্তে একই টিকেট ট্রান্সফার করলে যাতে একজনের
+     * কাজ অন্যজনেরটা মুছে না দেয়। SQLite-এ row-level lock নেই (পুরো
+     * ডেটাবেসই লক হয়), তাই সেখানে সাধারণ SELECT-ই যথেষ্ট — টেস্ট
+     * SQLite-এ চলে বলে এই পার্থক্যটা এখানেই সামলানো।
+     */
+    public static function lockRow(string $table, int $id): ?array
+    {
+        if (!preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $table)) {
+            throw new RuntimeException("অবৈধ টেবিল নাম: {$table}");
+        }
+
+        $sql = "SELECT * FROM `{$table}` WHERE id = ?";
+        if (self::driver() === 'mysql') {
+            $sql .= ' FOR UPDATE';
+        }
+
+        return self::selectOne($sql, [$id]);
+    }
+
     /**
      * নেস্টেড কল সেভপয়েন্ট ছাড়াই নিরাপদ — ভেতরের কল বাইরের ট্রানজ্যাকশনেই যোগ হয়।
      */

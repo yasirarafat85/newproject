@@ -74,14 +74,24 @@ final class TicketService
                 'updated_at'          => now(),
             ]);
 
-            // টপিকে অটো-অ্যাসাইন ঠিক করা থাকলে সঙ্গে সঙ্গে বসিয়ে দিই
+            // অ্যাসাইনমেন্টের অগ্রাধিকার: টপিকের নির্দিষ্ট নির্দেশ আগে,
+            // না থাকলে ডিপার্টমেন্টের অটো-অ্যাসাইনমেন্ট কৌশল
             $assignedAgent = $topic['auto_assign_agent_id'] ?? null;
-            $assignedTeam = $topic['auto_assign_team_id'] ?? null;
+            $assignedTeam  = $topic['auto_assign_team_id'] ?? null;
+
+            if ($assignedAgent === null && $assignedTeam === null) {
+                $assignedAgent = AssignmentService::pick($deptId);
+            }
+
             if ($assignedAgent !== null || $assignedTeam !== null) {
                 QueryBuilder::table('tickets')->where('id', $ticketId)->update([
                     'assigned_agent_id' => $assignedAgent,
                     'assigned_team_id'  => $assignedTeam,
                 ]);
+
+                if ($assignedAgent !== null) {
+                    AssignmentService::markAssigned((int) $assignedAgent);
+                }
             }
 
             self::addThread($ticketId, [
@@ -95,6 +105,21 @@ final class TicketService
             $ticket = QueryBuilder::table('tickets')->where('id', $ticketId)->first();
 
             AuditService::log('ticket.created', 'ticket', $ticketId, '#' . $ticket['number'] . ' — ' . $ticket['subject']);
+
+            $url = '/agent/tickets/' . $ticketId;
+            $subject = '#' . $ticket['number'] . ' — ' . $ticket['subject'];
+
+            if ($assignedAgent !== null) {
+                NotificationService::notify(
+                    (int) $assignedAgent, 'ticket.assigned',
+                    'আপনাকে একটি নতুন টিকেট দেওয়া হয়েছে', $subject, $url, $ticketId
+                );
+            } else {
+                NotificationService::notifyMany(
+                    NotificationService::departmentManagers($deptId), null, 'ticket.unassigned',
+                    'নতুন আনঅ্যাসাইনড টিকেট', $subject, $url, $ticketId
+                );
+            }
 
             return $ticket;
         });

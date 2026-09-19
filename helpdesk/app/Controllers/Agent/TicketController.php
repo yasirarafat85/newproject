@@ -13,7 +13,9 @@ use App\Core\Str;
 use App\Core\Validator;
 use App\Models\Ticket;
 use App\Services\AttachmentService;
+use App\Services\CollaboratorService;
 use App\Services\TicketService;
+use App\Services\TransferService;
 use RuntimeException;
 
 /**
@@ -89,16 +91,28 @@ final class TicketController extends Controller
     {
         $ticket = $this->visibleTicket($request->paramInt('id'));
 
+        $ticketId = (int) $ticket['id'];
+
         return $this->view('agent/tickets/show', [
-            'ticket'      => $ticket,
-            'threads'     => Ticket::threads((int) $ticket['id'], true),
-            'attachments' => Ticket::attachmentsByThread((int) $ticket['id']),
-            'transfers'   => Ticket::transfers((int) $ticket['id']),
-            'statuses'    => QueryBuilder::table('statuses')->orderBy('sort_order')->get(),
-            'priorities'  => QueryBuilder::table('priorities')->orderBy('level')->get(),
-            'canned'      => $this->cannedFor((int) $ticket['dept_id']),
-            'userTickets' => $this->otherTicketsOf((int) $ticket['user_id'], (int) $ticket['id']),
-            'maxUpload'   => AttachmentService::humanLimit(),
+            'ticket'        => $ticket,
+            'threads'       => Ticket::threads($ticketId, true),
+            'attachments'   => Ticket::attachmentsByThread($ticketId),
+            'transfers'     => Ticket::transfers($ticketId),
+            'forwards'      => Ticket::forwards($ticketId),
+            'collaborators' => CollaboratorService::listFor($ticketId),
+            'statuses'      => QueryBuilder::table('statuses')->orderBy('sort_order')->get(),
+            'priorities'    => QueryBuilder::table('priorities')->orderBy('level')->get(),
+            'canned'        => $this->cannedFor((int) $ticket['dept_id']),
+            'userTickets'   => $this->otherTicketsOf((int) $ticket['user_id'], $ticketId),
+            'maxUpload'     => AttachmentService::humanLimit(),
+
+            // ট্রান্সফার মডালের বিকল্পগুলো
+            'allDepartments' => QueryBuilder::table('departments')
+                ->select('id', 'name')->where('is_active', 1)->orderBy('sort_order')->get(),
+            'deptAgents'     => $this->agentsInDepartment((int) $ticket['dept_id']),
+            'allTeams'       => QueryBuilder::table('teams')
+                ->select('id', 'name')->where('is_active', 1)->orderBy('name')->get(),
+            'mayResetSla'    => TransferService::mayResetSla($ticket, (int) $ticket['dept_id']),
         ], 'layouts/agent');
     }
 
@@ -343,6 +357,19 @@ final class TicketController extends Controller
                 $sub->whereNull('dept_id')->orWhere('dept_id', $deptId);
             })
             ->orderBy('title')
+            ->get();
+    }
+
+    /** যে এজেন্টদের এই ডিপার্টমেন্টে অ্যাসাইন করা যায়। */
+    private function agentsInDepartment(int $deptId): array
+    {
+        return QueryBuilder::table('agents')
+            ->select('agents.id', 'agents.name', 'agents.is_available')
+            ->join('agent_departments', 'agent_departments.agent_id', '=', 'agents.id')
+            ->where('agent_departments.dept_id', $deptId)
+            ->where('agents.status', 'active')
+            ->whereNull('agents.deleted_at')
+            ->orderBy('agents.name')
             ->get();
     }
 

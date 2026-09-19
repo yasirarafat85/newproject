@@ -3,9 +3,17 @@ declare(strict_types=1);
 
 namespace App\Core\Exceptions;
 
-use RuntimeException;
+use Exception;
 
-class HttpException extends RuntimeException
+/**
+ * HTTP-স্তরের ত্রুটি (404, 403, 419…)।
+ *
+ * ইচ্ছে করেই RuntimeException থেকে নয় — কন্ট্রোলাররা সার্ভিসের ডোমেইন
+ * ত্রুটি ধরতে `catch (RuntimeException)` ব্যবহার করে, আর তখন অনুমতি
+ * অস্বীকৃতিও সেখানে আটকে গিয়ে বন্ধুত্বপূর্ণ বার্তায় পরিণত হতো — ব্যবহারকারী
+ * 403-এর বদলে একটি রিডাইরেক্ট পেতেন।
+ */
+class HttpException extends Exception
 {
     public function __construct(private readonly int $statusCode, string $message = '')
     {

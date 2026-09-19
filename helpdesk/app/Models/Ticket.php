@@ -152,19 +152,49 @@ final class Ticket
         return $grouped;
     }
 
-    /** টিকেটের হস্তান্তর ইতিহাস — টাইমলাইনে দেখানো হয়। */
+    /**
+     * হস্তান্তরের ইতিহাস — কোথা থেকে কোথায়, কে করল, কেন।
+     * টাইমলাইনে প্রতিটি সারিতে আলাদা কোয়েরি না চালিয়ে একবারেই নাম আনি।
+     */
     public static function transfers(int $ticketId): array
     {
         return QueryBuilder::table('ticket_transfers')
             ->select(
                 'ticket_transfers.id', 'ticket_transfers.transfer_type', 'ticket_transfers.reason',
-                'ticket_transfers.is_automatic', 'ticket_transfers.created_at',
-                'agents.name AS by_name'
+                'ticket_transfers.is_automatic', 'ticket_transfers.sla_action',
+                'ticket_transfers.old_due_at', 'ticket_transfers.new_due_at', 'ticket_transfers.created_at',
+                'by_agent.name AS by_name',
+                'from_dept.name AS from_dept_name', 'to_dept.name AS to_dept_name',
+                'from_agent.name AS from_agent_name', 'to_agent.name AS to_agent_name',
+                'from_team.name AS from_team_name', 'to_team.name AS to_team_name'
             )
-            ->leftJoin('agents', 'agents.id', '=', 'ticket_transfers.by_agent_id')
+            ->leftJoin('agents AS by_agent', 'by_agent.id', '=', 'ticket_transfers.by_agent_id')
+            ->leftJoin('departments AS from_dept', 'from_dept.id', '=', 'ticket_transfers.from_dept_id')
+            ->leftJoin('departments AS to_dept', 'to_dept.id', '=', 'ticket_transfers.to_dept_id')
+            ->leftJoin('agents AS from_agent', 'from_agent.id', '=', 'ticket_transfers.from_agent_id')
+            ->leftJoin('agents AS to_agent', 'to_agent.id', '=', 'ticket_transfers.to_agent_id')
+            ->leftJoin('teams AS from_team', 'from_team.id', '=', 'ticket_transfers.from_team_id')
+            ->leftJoin('teams AS to_team', 'to_team.id', '=', 'ticket_transfers.to_team_id')
             ->where('ticket_transfers.ticket_id', $ticketId)
             ->orderBy('ticket_transfers.created_at', 'DESC')
-            ->limit(20)
+            ->orderBy('ticket_transfers.id', 'DESC')
+            ->limit(25)
+            ->get();
+    }
+
+    /** এই টিকেটে বাইরে পাঠানো ফরওয়ার্ডগুলো। */
+    public static function forwards(int $ticketId): array
+    {
+        return QueryBuilder::table('ticket_external_forwards')
+            ->select(
+                'ticket_external_forwards.id', 'ticket_external_forwards.to_email',
+                'ticket_external_forwards.status', 'ticket_external_forwards.created_at',
+                'agents.name AS by_name'
+            )
+            ->leftJoin('agents', 'agents.id', '=', 'ticket_external_forwards.by_agent_id')
+            ->where('ticket_external_forwards.ticket_id', $ticketId)
+            ->orderBy('ticket_external_forwards.created_at', 'DESC')
+            ->limit(10)
             ->get();
     }
 }

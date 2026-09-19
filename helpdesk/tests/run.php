@@ -15,6 +15,7 @@ $suites = [
     'ticket_test.php' => 'টিকেট লাইফসাইকেল',
     'http_test.php'   => 'রাউট ও অনুমতি',
     'admin_test.php'  => 'অ্যাডমিন প্যানেল',
+    'transfer_test.php' => 'ট্রান্সফার ও ফরওয়ার্ডিং',
 ];
 
 $failed = [];

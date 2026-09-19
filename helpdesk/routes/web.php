@@ -14,6 +14,7 @@ declare(strict_types=1);
 use App\Controllers\Agent\AuthController as AgentAuthController;
 use App\Controllers\Agent\DashboardController;
 use App\Controllers\Agent\TicketController as AgentTicketController;
+use App\Controllers\Agent\TransferController;
 use App\Controllers\Admin\ActivityLogController;
 use App\Controllers\Admin\AgentController;
 use App\Controllers\Admin\DashboardController as AdminDashboardController;
@@ -96,6 +97,12 @@ $router->group(['prefix' => '/agent', 'middleware' => [VerifyCsrf::class, ShareV
         $r->post('/tickets/{id}/claim', [AgentTicketController::class, 'claim']);
         $r->post('/tickets/{id}/status', [AgentTicketController::class, 'changeStatus']);
         $r->post('/tickets/{id}/priority', [AgentTicketController::class, 'changePriority']);
+
+        // হস্তান্তর, বাইরে ফরওয়ার্ড ও অনুলিপি
+        $r->post('/tickets/{id}/transfer', [TransferController::class, 'transfer']);
+        $r->post('/tickets/{id}/forward', [TransferController::class, 'forward']);
+        $r->post('/tickets/{id}/collaborators', [TransferController::class, 'addCollaborator']);
+        $r->post('/tickets/{id}/collaborators/{collaborator}/delete', [TransferController::class, 'removeCollaborator']);
     });
 });
 

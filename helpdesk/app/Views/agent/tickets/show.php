@@ -265,9 +265,55 @@ $isClosed  = in_array($ticket['status_state'], ['resolved', 'closed', 'archived'
                     </form>
                 <?php endif; ?>
 
-                <?php if (Auth::can('ticket.transfer', $ticket)): ?>
-                    <button type="button" class="btn-hd btn-ghost-hd btn-block" disabled
-                            title="P3-এ যুক্ত হবে">ট্রান্সফার / ফরওয়ার্ড</button>
+                <?php if (Auth::can('ticket.transfer', $ticket) || Auth::can('ticket.assign', $ticket)): ?>
+                    <button type="button" class="btn-hd btn-info-hd btn-block" data-open-modal="transfer-modal">
+                        <svg viewBox="0 0 24 24"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
+                        স্থানান্তর করুন
+                    </button>
+                <?php endif; ?>
+
+                <?php if (Auth::can('ticket.forward_external', $ticket)): ?>
+                    <button type="button" class="btn-hd btn-ghost-hd btn-block" data-open-modal="forward-modal">
+                        <svg viewBox="0 0 24 24"><polyline points="15 17 20 12 15 7"/><path d="M4 18v-2a4 4 0 014-4h12"/></svg>
+                        বাইরে ফরওয়ার্ড
+                    </button>
+                <?php endif; ?>
+            </div>
+        </div>
+
+        <div class="card-hd">
+            <div class="card-hd-head"><h3>অনুলিপি (CC)</h3></div>
+            <div class="card-hd-body">
+                <?php if ($collaborators === []): ?>
+                    <p class="muted" style="font-size:13px;margin:0 0 12px">কেউ যুক্ত নেই।</p>
+                <?php else: ?>
+                    <?php foreach ($collaborators as $cc): ?>
+                        <div class="prop-row" style="gap:8px">
+                            <span style="min-width:0;font-size:12.5px;overflow:hidden;text-overflow:ellipsis">
+                                <?= e($cc['name']) ?><br>
+                                <span class="faint" style="font-size:11px"><?= e($cc['email']) ?></span>
+                            </span>
+                            <?php if (Auth::can('ticket.edit', $ticket)): ?>
+                                <form method="post" style="margin-left:auto"
+                                      action="<?= e(url('/agent/tickets/' . $ticketId . '/collaborators/' . $cc['id'] . '/delete')) ?>"
+                                      data-confirm="<?= e($cc['name']) ?> কে অনুলিপি থেকে সরাবেন?">
+                                    <?= csrf_field() ?>
+                                    <button type="submit" class="link-danger" style="padding:2px 4px">সরান</button>
+                                </form>
+                            <?php endif; ?>
+                        </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+
+                <?php if (Auth::can('ticket.edit', $ticket)): ?>
+                    <form method="post" action="<?= e(url('/agent/tickets/' . $ticketId . '/collaborators')) ?>" data-once>
+                        <?= csrf_field() ?>
+                        <input class="input-hd" type="email" name="email" placeholder="ইমেইল ঠিকানা"
+                               style="padding:8px 10px;font-size:13px;margin-bottom:6px" required>
+                        <input class="input-hd" type="text" name="name" placeholder="নাম (ঐচ্ছিক)"
+                               style="padding:8px 10px;font-size:13px;margin-bottom:8px">
+                        <button type="submit" class="btn-hd btn-ghost-hd btn-sm-hd btn-block">অনুলিপিতে যোগ করুন</button>
+                    </form>
                 <?php endif; ?>
             </div>
         </div>
@@ -275,34 +321,89 @@ $isClosed  = in_array($ticket['status_state'], ['resolved', 'closed', 'archived'
         <div class="card-hd">
             <div class="card-hd-head"><h3>টাইমলাইন</h3></div>
             <div class="card-hd-body">
-                <?php if ($transfers === []): ?>
+                <?php if ($transfers === [] && $forwards === []): ?>
                     <p class="muted" style="font-size:13px;margin:0">এখনো কোনো হস্তান্তর হয়নি।</p>
-                <?php else: ?>
-                    <?php foreach ($transfers as $transfer): ?>
-                        <div class="prop-row" style="align-items:flex-start">
-                            <span style="font-size:12.5px">
-                                <?= e(match ($transfer['transfer_type']) {
-                                    'department' => 'ডিপার্টমেন্ট বদল',
-                                    'agent'      => 'এজেন্ট বদল',
-                                    'team'       => 'টিমে দেওয়া',
-                                    'escalation' => 'এস্কেলেশন',
-                                    'claim'      => 'দায়িত্ব নেওয়া',
-                                    default      => 'ছেড়ে দেওয়া',
-                                }) ?>
-                                <?php if ((int) $transfer['is_automatic'] === 1): ?>
-                                    <span class="faint">(স্বয়ংক্রিয়)</span>
-                                <?php endif; ?>
-                            </span>
-                            <b style="font-size:11.5px;text-align:right">
-                                <?= e($transfer['by_name'] ?? 'সিস্টেম') ?><br>
-                                <span class="faint"><?= e(time_ago($transfer['created_at'])) ?></span>
-                            </b>
-                        </div>
-                    <?php endforeach; ?>
                 <?php endif; ?>
+
+                <?php foreach ($transfers as $transfer): ?>
+                    <?php
+                    // "কোথা থেকে কোথায়" — যেটা আসলে বদলেছে কেবল সেটাই দেখাই
+                    $from = null;
+                    $to = null;
+                    if ($transfer['from_dept_name'] !== $transfer['to_dept_name']) {
+                        $from = $transfer['from_dept_name'];
+                        $to = $transfer['to_dept_name'];
+                    } elseif ($transfer['to_team_name'] !== null && $transfer['from_team_name'] !== $transfer['to_team_name']) {
+                        $from = $transfer['from_team_name'] ?? 'কেউ নয়';
+                        $to = $transfer['to_team_name'];
+                    } else {
+                        $from = $transfer['from_agent_name'] ?? 'কেউ নয়';
+                        $to = $transfer['to_agent_name'] ?? 'কেউ নয়';
+                    }
+                    ?>
+                    <div class="timeline-item">
+                        <span class="timeline-kind">
+                            <?= e(match ($transfer['transfer_type']) {
+                                'department' => 'ডিপার্টমেন্ট',
+                                'agent'      => 'এজেন্ট',
+                                'team'       => 'টিম',
+                                'escalation' => 'এস্কেলেশন',
+                                'claim'      => 'দায়িত্ব নেওয়া',
+                                default      => 'ছেড়ে দেওয়া',
+                            }) ?>
+                            <?php if ((int) $transfer['is_automatic'] === 1): ?>
+                                <span class="pill pill-warn">স্বয়ংক্রিয়</span>
+                            <?php endif; ?>
+                        </span>
+                        <div class="timeline-move">
+                            <span class="faint"><?= e($from) ?></span>
+                            <span class="arrow">→</span>
+                            <strong><?= e($to) ?></strong>
+                        </div>
+                        <?php if (($transfer['reason'] ?? '') !== ''): ?>
+                            <div class="timeline-reason"><?= e($transfer['reason']) ?></div>
+                        <?php endif; ?>
+                        <?php if ($transfer['sla_action'] !== 'keep'): ?>
+                            <div class="timeline-reason">
+                                SLA <?= $transfer['sla_action'] === 'reset' ? 'নতুন করে শুরু' : 'বাড়ানো হয়েছে' ?>
+                            </div>
+                        <?php endif; ?>
+                        <div class="timeline-meta">
+                            <?= e($transfer['by_name'] ?? 'সিস্টেম') ?> · <?= e(time_ago($transfer['created_at'])) ?>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+
+                <?php foreach ($forwards as $forward): ?>
+                    <div class="timeline-item">
+                        <span class="timeline-kind">বাইরে ফরওয়ার্ড
+                            <span class="pill <?= $forward['status'] === 'sent' ? 'pill-on' : ($forward['status'] === 'failed' ? 'pill-warn' : 'pill-off') ?>">
+                                <?= e(match ($forward['status']) {
+                                    'sent' => 'পাঠানো হয়েছে', 'failed' => 'ব্যর্থ', default => 'কিউতে',
+                                }) ?>
+                            </span>
+                        </span>
+                        <div class="timeline-move"><strong><?= e($forward['to_email']) ?></strong></div>
+                        <div class="timeline-meta">
+                            <?= e($forward['by_name'] ?? 'সিস্টেম') ?> · <?= e(time_ago($forward['created_at'])) ?>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
             </div>
         </div>
     </aside>
 </div>
 
+<?php if (Auth::can('ticket.transfer', $ticket) || Auth::can('ticket.assign', $ticket)): ?>
+    <?= View::partial('partials/transfer_modal', [
+        'ticket' => $ticket, 'allDepartments' => $allDepartments,
+        'deptAgents' => $deptAgents, 'allTeams' => $allTeams, 'mayResetSla' => $mayResetSla,
+    ]) ?>
+<?php endif; ?>
+
+<?php if (Auth::can('ticket.forward_external', $ticket)): ?>
+    <?= View::partial('partials/forward_modal', ['ticket' => $ticket]) ?>
+<?php endif; ?>
+
 <script type="module" src="<?= e(asset('js/modules/ticket-view.js')) ?>"></script>
+<script type="module" src="<?= e(asset('js/modules/modal.js')) ?>"></script>

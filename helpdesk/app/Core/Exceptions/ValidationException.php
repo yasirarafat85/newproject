@@ -3,9 +3,10 @@ declare(strict_types=1);
 
 namespace App\Core\Exceptions;
 
-use RuntimeException;
+use Exception;
 
-class ValidationException extends RuntimeException
+/** ফর্ম ভ্যালিডেশন ব্যর্থতা — HttpException-এর মতোই ফ্রেমওয়ার্কের কন্ট্রোল-ফ্লো। */
+class ValidationException extends Exception
 {
     public function __construct(private readonly array $errors, private readonly array $old = [])
     {
