@@ -58,7 +58,7 @@ while (time() - $started < TIME_BUDGET_SECONDS && ($job = Jobs::claim()) !== nul
             continue;
         }
         $responder ??= new CommentResponder(new ReplyGenerator(AnthropicAiClient::fromEnv()));
-        $responder->handle((string) ($job['payload']['comment_id'] ?? ''));
+        $responder->handle((string) ($job['payload']['comment_id'] ?? ''), !empty($job['payload']['manual']));
         Jobs::done((int) $job['id']);
     } catch (AiException | GraphException $e) {
         $retryable = $e instanceof AiException ? $e->retryable : ($e->httpStatus === 0 || $e->httpStatus >= 500);

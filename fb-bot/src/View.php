@@ -40,6 +40,19 @@ final class View
         return '<svg viewBox="0 0 24 24" aria-hidden="true">' . ($paths[$name] ?? '') . '</svg>';
     }
 
+    /**
+     * Link to a comment on Facebook: post URL + comment_id of the comment.
+     * @param array<string, mixed> $c comment row
+     */
+    public static function facebookLink(array $c): ?string
+    {
+        if (empty($c['post_id'])) {
+            return null;
+        }
+        $parts = explode('_', (string) $c['comment_id']);
+        return 'https://www.facebook.com/' . rawurlencode((string) $c['post_id']) . '?comment_id=' . rawurlencode(end($parts));
+    }
+
     /** Previous / next links that keep the current query filters. */
     public static function pager(int $page, bool $hasNext): string
     {
@@ -59,12 +72,17 @@ final class View
         $nav = [
             ['index.php', 'home', 'ড্যাশবোর্ড', true],
             ['comments.php', 'chat', 'কমেন্ট', true],
-            ['#', 'user', 'মানুষ লাগবে', false],
+            ['queue.php', 'user', 'মানুষ লাগবে', true],
             ['knowledge.php', 'book', 'Knowledge Base', true],
             ['logs.php', 'list', 'লগ', true],
             ['settings.php', 'settings', 'সেটিংস', true],
         ];
         $app = self::e(Env::get('APP_NAME', 'FB Page Bot'));
+        try {
+            $queueCount = CommentActions::queueCount();
+        } catch (\Throwable) {
+            $queueCount = 0;
+        }
         ?>
 <!doctype html>
 <html lang="bn">
@@ -85,7 +103,7 @@ final class View
     <nav>
       <?php foreach ($nav as [$href, $icon, $label, $ready]): ?>
         <?php if ($ready): ?>
-          <a class="nav-item<?= $active === $href ? ' active' : '' ?>" href="<?= $href ?>"><?= self::icon($icon) ?><?= $label ?></a>
+          <a class="nav-item<?= $active === $href ? ' active' : '' ?>" href="<?= $href ?>"><?= self::icon($icon) ?><?= $label ?><?php if ($href === 'queue.php' && $queueCount > 0): ?><span class="nav-count"><?= $queueCount ?></span><?php endif; ?></a>
         <?php else: ?>
           <span class="nav-item disabled" title="পরের ফেজে আসছে"><?= self::icon($icon) ?><?= $label ?><span class="soon">শীঘ্রই</span></span>
         <?php endif; ?>

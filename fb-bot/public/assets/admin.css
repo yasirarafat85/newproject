@@ -308,11 +308,11 @@ tr:hover td { background: var(--bg-secondary); }
 .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .field-row .field { margin-top: 0; }
 .settings-form input[type="text"], .settings-form input[type="number"], .settings-form select,
-.card textarea {
+.card textarea, .queue-form textarea {
   font: inherit; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: var(--radius);
   background: var(--bg); color: var(--text); width: 100%;
 }
-.settings-form input:focus, .settings-form select:focus, .card textarea:focus { outline: none; border-color: var(--info); box-shadow: 0 0 0 3px var(--info-soft); }
+.settings-form input:focus, .settings-form select:focus, .card textarea:focus, .queue-form textarea:focus { outline: none; border-color: var(--info); box-shadow: 0 0 0 3px var(--info-soft); }
 
 .toggle { display: flex; align-items: flex-start; gap: 14px; padding: 12px 0; cursor: pointer; border-bottom: 1px solid var(--border); }
 .toggle:last-child { border-bottom: none; }
@@ -347,3 +347,17 @@ tr:hover td { background: var(--bg-secondary); }
 .badge-ai-ignore  { background: var(--bg-secondary); color: var(--text-muted); border: 1px solid var(--border); }
 
 @media (max-width: 800px) { .field-row { grid-template-columns: 1fr; } }
+
+/* Phase 3: queue */
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.nav-count { margin-left: auto; min-width: 22px; padding: 0 7px; border-radius: 999px; background: var(--primary); color: var(--on-color); font-size: 12px; font-weight: 700; text-align: center; line-height: 20px; }
+.queue-help { margin: -4px 0 16px; }
+.queue-form { margin-top: 14px; display: flex; flex-direction: column; gap: 10px; }
+.queue-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.queue-actions .btn { padding: 10px 20px; }
+button.btn-ghost { font: inherit; cursor: pointer; }
+button:disabled { opacity: 0.6; cursor: wait; transform: none; }
+.stat-link { text-decoration: none; color: inherit; }
+.stat-link .stat-card { height: 100%; }
+.badge-posting { background: var(--info-soft); color: var(--info); }
+@media (max-width: 800px) { .queue-actions .btn, .queue-actions .btn-ghost { width: 100%; justify-content: center; } }

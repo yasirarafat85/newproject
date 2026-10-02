@@ -24,15 +24,16 @@ final class CommentResponder
         };
     }
 
-    public static function enqueue(string $commentId): void
+    /** @param bool $manual true when the owner asked for a retry: the age limit is not applied */
+    public static function enqueue(string $commentId, bool $manual = false): void
     {
-        Jobs::push('reply_comment', ['comment_id' => $commentId]);
+        Jobs::push('reply_comment', ['comment_id' => $commentId] + ($manual ? ['manual' => true] : []));
     }
 
     /**
      * @throws AiException|GraphException when the job should be retried or failed
      */
-    public function handle(string $commentId): void
+    public function handle(string $commentId, bool $manual = false): void
     {
         $c = Database::one('SELECT * FROM comments WHERE comment_id = ?', [$commentId]);
         if ($c === null || $c['status'] !== 'new') {
@@ -45,7 +46,7 @@ final class CommentResponder
             return;
         }
 
-        $skip = $this->skipReason($c);
+        $skip = $this->skipReason($c, $manual);
         if ($skip !== null) {
             self::update($commentId, ['status' => 'skipped', 'note' => $skip]);
             Logger::info('reply', 'Comment skipped', ['comment_id' => $commentId, 'reason' => $skip]);
@@ -97,17 +98,18 @@ final class CommentResponder
             'status' => $action === 'handoff' ? 'needs_human' : 'replied',
             'reply_comment_id' => $replyId !== '' ? $replyId : null,
             'replied_at' => Database::now(),
+            'replied_by' => 'ai',
         ]);
         Logger::info('reply', $action === 'handoff' ? 'Handoff reply posted' : 'Reply posted', ['comment_id' => $commentId, 'reply_id' => $replyId]);
     }
 
     /** @param array<string, mixed> $c */
-    private function skipReason(array $c): ?string
+    private function skipReason(array $c, bool $manual): ?string
     {
         if (!Settings::botEnabled()) {
             return 'বট বন্ধ ছিল';
         }
-        if (time() - strtotime($c['created_at'] . ' UTC') > self::MAX_AGE_SECONDS) {
+        if (!$manual && time() - strtotime($c['created_at'] . ' UTC') > self::MAX_AGE_SECONDS) {
             return 'অনেক পুরনো কমেন্ট (২৪ ঘণ্টার বেশি)';
         }
         if (trim((string) $c['message']) === '') {

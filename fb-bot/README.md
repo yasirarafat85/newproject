@@ -95,3 +95,8 @@ composer install --no-dev      # প্রথমবার, আর composer.lock 
 ```
 মডেল (Opus 5.5 / Sonnet 5.5 / Haiku 4.5), DRY_RUN, বট চালু/বন্ধ, টোন আর সীমা প্যানেলের **সেটিংস** থেকে বদলানো যায়।
 Knowledge Base প্যানেল থেকে এডিট করা হয়, আর থাকে `storage/knowledge.md`-এ (git-এর বাইরে)।
+
+## Phase 3: "মানুষ লাগবে" তালিকা
+পুরো গাইড: [`docs/PHASE3_QUEUE.md`](docs/PHASE3_QUEUE.md)
+
+প্যানেলের **মানুষ লাগবে** পেজ থেকে নিজে উত্তর লেখা, DRY_RUN-এর উত্তর অনুমোদন করা, আর ব্যর্থ উত্তর আবার চেষ্টা করা যায়।

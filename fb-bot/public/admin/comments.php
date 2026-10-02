@@ -22,9 +22,12 @@ $statuses = [
     'needs_human' => 'মানুষ লাগবে',
     'skipped' => 'বাদ',
     'failed' => 'ব্যর্থ',
+    'resolved' => 'সমাধান',
 ];
+$statusLabels = $statuses + ['posting' => 'পোস্ট হচ্ছে'];
 
 $aiActions = ['reply' => 'AI: উত্তর', 'handoff' => 'AI: মানুষ লাগবে', 'ignore' => 'AI: উপেক্ষা'];
+$repliedBy = ['ai' => 'AI নিজে', 'approved' => 'আপনার অনুমোদনে', 'admin' => 'আপনি লিখেছেন'];
 
 $status = (string) ($_GET['status'] ?? '');
 if (!array_key_exists($status, $statuses)) {
@@ -47,16 +50,6 @@ $rows = Database::all(
 $hasNext = count($rows) > PER_PAGE;
 $rows = array_slice($rows, 0, PER_PAGE);
 
-/** Link to the comment on Facebook: post URL + comment_id of the comment. */
-function facebookLink(array $c): ?string
-{
-    if (empty($c['post_id'])) {
-        return null;
-    }
-    $parts = explode('_', (string) $c['comment_id']);
-    return 'https://www.facebook.com/' . rawurlencode((string) $c['post_id']) . '?comment_id=' . rawurlencode(end($parts));
-}
-
 View::header('কমেন্ট', 'comments.php');
 ?>
 <nav class="filters">
@@ -77,10 +70,10 @@ View::header('কমেন্ট', 'comments.php');
     <?php foreach ($rows as $c): ?>
       <article class="comment-card">
         <div class="comment-head">
-          <span class="badge badge-<?= View::e($c['status']) ?>"><?= View::e($statuses[$c['status']] ?? $c['status']) ?></span>
+          <span class="badge badge-<?= View::e($c['status']) ?>"><?= View::e($statusLabels[$c['status']] ?? $c['status']) ?></span>
           <span class="comment-author"><?= View::e($c['from_name'] ?: 'অজানা ব্যক্তি') ?></span>
           <span class="comment-time"><?= View::localTime($c['created_at']) ?></span>
-          <?php if ($link = facebookLink($c)): ?>
+          <?php if ($link = View::facebookLink($c)): ?>
             <a href="<?= View::e($link) ?>" target="_blank" rel="noopener noreferrer">Facebook-এ দেখুন ↗</a>
           <?php endif; ?>
         </div>
@@ -88,12 +81,16 @@ View::header('কমেন্ট', 'comments.php');
         <?php if (!empty($c['reply_text'])): ?>
           <div class="comment-reply"><?= View::e($c['reply_text']) ?></div>
         <?php endif; ?>
-        <?php if (!empty($c['ai_action'])): ?>
+        <?php if (!empty($c['ai_action']) || !empty($c['replied_at'])): ?>
           <div class="comment-meta">
-            <span class="badge badge-ai-<?= View::e($c['ai_action']) ?>"><?= View::e($aiActions[$c['ai_action']] ?? $c['ai_action']) ?></span>
-            <span><?= View::e(AiModels::label($c['ai_model'])) ?></span>
-            <?php if ($c['cost_micros'] !== null): ?><span><?= AiModels::formatCost((int) $c['cost_micros']) ?></span><?php endif; ?>
-            <?php if (!empty($c['replied_at'])): ?><span>পোস্ট হয়েছে <?= View::localTime($c['replied_at']) ?></span><?php endif; ?>
+            <?php if (!empty($c['ai_action'])): ?>
+              <span class="badge badge-ai-<?= View::e($c['ai_action']) ?>"><?= View::e($aiActions[$c['ai_action']] ?? $c['ai_action']) ?></span>
+              <span><?= View::e(AiModels::label($c['ai_model'])) ?></span>
+              <?php if ($c['cost_micros'] !== null): ?><span><?= AiModels::formatCost((int) $c['cost_micros']) ?></span><?php endif; ?>
+            <?php endif; ?>
+            <?php if (!empty($c['replied_at'])): ?>
+              <span>পোস্ট হয়েছে <?= View::localTime($c['replied_at']) ?><?= isset($repliedBy[$c['replied_by'] ?? '']) ? ' · ' . $repliedBy[$c['replied_by']] : '' ?></span>
+            <?php endif; ?>
           </div>
         <?php endif; ?>
         <?php if (!empty($c['note'])): ?>

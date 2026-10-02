@@ -32,7 +32,7 @@ $count = static function (string $sql, array $params = []): int {
 $stats = [
     ['blue', 'chat', $count('SELECT COUNT(*) AS n FROM comments WHERE created_at >= ?', [$todayUtc]), 'আজকের কমেন্ট'],
     ['green', 'check', $count("SELECT COUNT(*) AS n FROM comments WHERE status = 'replied' AND updated_at >= ?", [$todayUtc]), 'আজ উত্তর দেওয়া হয়েছে'],
-    ['orange', 'user', $count("SELECT COUNT(*) AS n FROM comments WHERE status = 'needs_human'"), 'মানুষের উত্তর লাগবে'],
+    ['orange', 'user', $count("SELECT COUNT(*) AS n FROM comments WHERE status IN ('needs_human', 'dry_run', 'failed')"), 'আপনার দেখা দরকার', 'queue.php'],
     ['red', 'alert', $count("SELECT COUNT(*) AS n FROM logs WHERE level = 'error' AND created_at >= ?", [$todayUtc]), 'আজকের এরর'],
 ];
 
@@ -68,7 +68,9 @@ View::header('ড্যাশবোর্ড', 'index.php');
 </div>
 
 <section class="stats-grid">
-  <?php foreach ($stats as [$color, $icon, $value, $label]): ?>
+  <?php foreach ($stats as $stat): ?>
+    <?php [$color, $icon, $value, $label] = $stat; $href = $stat[4] ?? null; ?>
+    <?php if ($href): ?><a class="stat-link" href="<?= $href ?>"><?php endif; ?>
     <div class="stat-card">
       <div class="stat-icon <?= $color ?>"><?= View::icon($icon) ?></div>
       <div>
@@ -76,6 +78,7 @@ View::header('ড্যাশবোর্ড', 'index.php');
         <div class="stat-label"><?= $label ?></div>
       </div>
     </div>
+    <?php if ($href): ?></a><?php endif; ?>
   <?php endforeach; ?>
   <div class="stat-card">
     <div class="stat-icon purple"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div>

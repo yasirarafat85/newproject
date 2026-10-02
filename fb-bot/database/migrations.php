@@ -104,4 +104,10 @@ return [
         )",
         "CREATE INDEX IF NOT EXISTS idx_ai_calls_created ON ai_calls (created_at)",
     ],
+
+    3 => [
+        // Who posted the reply: ai (automatic), approved (AI draft approved
+        // by the owner) or admin (written by the owner in the panel).
+        "ALTER TABLE comments ADD COLUMN replied_by TEXT",
+    ],
 ];

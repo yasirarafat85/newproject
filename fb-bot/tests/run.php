@@ -48,6 +48,7 @@ use App\AiException;
 use App\AiModels;
 use App\AiResponse;
 use App\AnthropicAiClient;
+use App\CommentActions;
 use App\CommentResponder;
 use App\GraphException;
 use App\Jobs;
@@ -330,6 +331,58 @@ CommentResponder::markFailed('c_missing', 'x');
 $addComment('f1', 'test', '903');
 CommentResponder::markFailed('f1', 'API key rejected: sk-ant-test-key-xyz-789');
 check('failed comment note never contains the API key', $comment('f1')['status'] === 'failed' && !str_contains($comment('f1')['note'], 'sk-ant-test'));
+
+echo "Owner actions (queue)\n";
+$adminPosted = [];
+$adminFails = 0;
+$actions = new CommentActions(static function (string $commentId, string $message) use (&$adminPosted, &$adminFails): string {
+    if ($adminFails > 0) {
+        $adminFails--;
+        throw new GraphException('(#200) Permissions error', 403);
+    }
+    $adminPosted[] = [$commentId, $message];
+    return $commentId . '_admin';
+});
+$setStatus = static fn (string $id, string $status, ?string $aiAction = null, ?string $reply = null) => Database::run(
+    'UPDATE comments SET status = ?, ai_action = ?, reply_text = ? WHERE comment_id = ?', [$status, $aiAction, $reply, $id]
+);
+
+$addComment('q1', 'দাম কত?', '950');
+$setStatus('q1', 'dry_run', 'reply', 'দাম ৫৫০ টাকা।');
+check('queue counts dry run', CommentActions::queueCount() >= 1);
+check('approve posts edited AI draft', $actions->reply('q1', '  দাম ৫৫০ টাকা। ধন্যবাদ!  ', true) === null
+    && end($adminPosted) === ['q1', 'দাম ৫৫০ টাকা। ধন্যবাদ!']);
+$q1 = $comment('q1');
+check('approved reply marked replied by approval', $q1['status'] === 'replied' && $q1['replied_by'] === 'approved' && $q1['reply_comment_id'] === 'q1_admin');
+$before = count($adminPosted);
+check('second click does not post again', $actions->reply('q1', 'আবার', true) !== null && count($adminPosted) === $before);
+
+$addComment('q2', 'অর্ডার কোথায়?', '951');
+$setStatus('q2', 'dry_run', 'handoff', 'টিম যোগাযোগ করবে।');
+$actions->reply('q2', 'টিম যোগাযোগ করবে।', true);
+check('approved handoff stays in needs_human for follow-up', $comment('q2')['status'] === 'needs_human');
+check('manual follow-up reply resolves it', $actions->reply('q2', 'আপনার অর্ডার আজ পাঠানো হয়েছে।', false) === null
+    && $comment('q2')['status'] === 'resolved' && $comment('q2')['replied_by'] === 'admin');
+
+$addComment('q3', 'হ্যালো', '952');
+$setStatus('q3', 'needs_human', 'handoff');
+check('empty manual reply rejected', $actions->reply('q3', "  \n ", false) !== null && $comment('q3')['status'] === 'needs_human');
+check('too long reply rejected', $actions->reply('q3', str_repeat('ক', CommentActions::MAX_REPLY_CHARS + 1), false) !== null);
+$adminFails = 1;
+$err = $actions->reply('q3', 'উত্তর', false);
+check('Facebook error reported and comment stays in queue', $err !== null && str_contains($err, 'Facebook') && $comment('q3')['status'] === 'needs_human');
+check('resolve without posting', $actions->resolve('q3') === null && $comment('q3')['status'] === 'resolved');
+check('resolve twice reports already done', $actions->resolve('q3') !== null);
+
+$addComment('q4', 'দাম?', '953', gmdate('Y-m-d H:i:s', time() - 3 * 86400));
+$setStatus('q4', 'failed');
+check('only failed comments can be retried', $actions->retry('q3') !== null);
+check('retry puts failed comment back as new with a manual job', $actions->retry('q4') === null && $comment('q4')['status'] === 'new'
+    && Database::one("SELECT COUNT(*) AS n FROM jobs WHERE payload LIKE '%q4%' AND payload LIKE '%manual%'")['n'] == 1);
+$ai->answer('reply', 'দাম ৫৫০ টাকা।');
+Settings::set('dry_run', '0');
+$responder->handle('q4', true);
+check('manual retry ignores the 24h age limit', $comment('q4')['status'] === 'replied' && $comment('q4')['replied_by'] === 'ai');
 
 echo "Anthropic SDK request\n";
 /** Fake PSR-18 transport: records the request, returns a canned Messages API response. */
