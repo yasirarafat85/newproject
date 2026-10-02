@@ -1,0 +1,3 @@
+# Safety net: only public/ should be the web root.
+# If the subdomain is ever pointed at this folder by mistake, block everything.
+Require all denied

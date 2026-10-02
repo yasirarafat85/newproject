@@ -1,0 +1,11 @@
+Options -Indexes
+
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# Never serve dotfiles (.env, .git, ...) even if one ends up here by mistake.
+<FilesMatch "^\.">
+  Require all denied
+</FilesMatch>
