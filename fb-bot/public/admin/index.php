@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 require __DIR__ . '/../../bootstrap.php';
 
+use App\AiModels;
 use App\Auth;
 use App\Database;
 use App\Env;
@@ -35,6 +36,17 @@ $stats = [
     ['red', 'alert', $count("SELECT COUNT(*) AS n FROM logs WHERE level = 'error' AND created_at >= ?", [$todayUtc]), 'আজকের এরর'],
 ];
 
+$monthUtc = (new DateTimeImmutable('first day of this month midnight', $tz))->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d H:i:s');
+$sumCost = static function (string $since): int {
+    try {
+        return (int) (Database::one('SELECT COALESCE(SUM(cost_micros), 0) AS n FROM ai_calls WHERE created_at >= ?', [$since])['n'] ?? 0);
+    } catch (Throwable) {
+        return 0;
+    }
+};
+$costToday = $sumCost($todayUtc);
+$costMonth = $sumCost($monthUtc);
+
 $botOn = false;
 $recentLogs = [];
 try {
@@ -42,7 +54,7 @@ try {
     $recentLogs = Database::all('SELECT level, channel, message, created_at FROM logs ORDER BY id DESC LIMIT 8');
 } catch (Throwable) {
 }
-$dryRun = Env::bool('DRY_RUN', true);
+$dryRun = Settings::dryRun();
 
 View::header('ড্যাশবোর্ড', 'index.php');
 ?>
@@ -51,6 +63,7 @@ View::header('ড্যাশবোর্ড', 'index.php');
   <span class="pill <?= $dryRun ? 'pill-warning' : 'pill-success' ?>">
     <?= $dryRun ? 'DRY_RUN: শুধু লগ হবে, Facebook-এ পোস্ট হবে না' : 'লাইভ: Facebook-এ উত্তর যাবে' ?>
   </span>
+  <span class="pill">মডেল: <?= View::e(AiModels::label(Settings::aiModel())) ?></span>
   <?php if (Env::has('PAGE_NAME')): ?><span class="pill">পেজ: <?= View::e(Env::get('PAGE_NAME')) ?></span><?php endif; ?>
 </div>
 
@@ -64,6 +77,13 @@ View::header('ড্যাশবোর্ড', 'index.php');
       </div>
     </div>
   <?php endforeach; ?>
+  <div class="stat-card">
+    <div class="stat-icon purple"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div>
+    <div>
+      <div class="stat-value"><?= AiModels::formatCost($costMonth) ?></div>
+      <div class="stat-label">AI খরচ এই মাসে · আজ <?= AiModels::formatCost($costToday) ?></div>
+    </div>
+  </div>
 </section>
 
 <?php $appUrl = rtrim(Env::get('APP_URL'), '/'); ?>

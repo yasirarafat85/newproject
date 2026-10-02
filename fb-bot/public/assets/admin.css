@@ -297,3 +297,53 @@ tr:hover td { background: var(--bg-secondary); }
 .kv dd { margin: 0; overflow-wrap: anywhere; }
 .kv code { user-select: all; }
 @media (max-width: 800px) { .kv { grid-template-columns: 1fr; gap: 4px; } .kv dd { margin-bottom: 8px; } }
+
+/* Phase 2: forms, settings, knowledge base */
+.stats-grid { grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); }
+.small { font-size: 13px; }
+.alert-success { background: var(--success-soft); color: var(--success); }
+.settings-form { display: flex; flex-direction: column; gap: 24px; max-width: 860px; }
+.field { display: flex; flex-direction: column; gap: 6px; margin-top: 16px; }
+.field label { font-weight: 600; font-size: 14px; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.field-row .field { margin-top: 0; }
+.settings-form input[type="text"], .settings-form input[type="number"], .settings-form select,
+.card textarea {
+  font: inherit; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: var(--radius);
+  background: var(--bg); color: var(--text); width: 100%;
+}
+.settings-form input:focus, .settings-form select:focus, .card textarea:focus { outline: none; border-color: var(--info); box-shadow: 0 0 0 3px var(--info-soft); }
+
+.toggle { display: flex; align-items: flex-start; gap: 14px; padding: 12px 0; cursor: pointer; border-bottom: 1px solid var(--border); }
+.toggle:last-child { border-bottom: none; }
+.toggle input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.toggle-ui { flex-shrink: 0; width: 44px; height: 24px; border-radius: 999px; background: var(--border); position: relative; transition: background 0.2s; margin-top: 2px; }
+.toggle-ui::after { content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: var(--on-color); box-shadow: var(--shadow-sm); transition: transform 0.2s; }
+.toggle input:checked + .toggle-ui { background: var(--success); }
+.toggle input:checked + .toggle-ui::after { transform: translateX(20px); }
+.toggle input:focus-visible + .toggle-ui { box-shadow: 0 0 0 3px var(--info-soft); }
+
+.model-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.model-option input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.model-card { display: flex; flex-direction: column; gap: 4px; height: 100%; padding: 16px; border: 1.5px solid var(--border); border-radius: var(--radius); cursor: pointer; transition: all 0.15s; }
+.model-card:hover { border-color: var(--info); }
+.model-card code { align-self: flex-start; margin-top: 4px; font-size: 12px; }
+.model-option input:checked + .model-card { border-color: var(--primary); background: var(--primary-soft); box-shadow: 0 0 0 1px var(--primary); }
+.model-option input:focus-visible + .model-card { box-shadow: 0 0 0 3px var(--info-soft); }
+
+.form-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 16px; }
+.settings-form .form-actions { justify-content: flex-end; margin-top: 0; }
+.settings-form .form-actions .btn { width: auto; }
+.btn-auto { width: auto; }
+.btn-success { background: linear-gradient(to right, #26C6A0, #00897B); color: var(--on-color); box-shadow: 0 4px 16px rgba(38, 198, 160, 0.40); }
+
+.kb-grid { align-items: start; }
+.kb-editor { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 14px; line-height: 1.6; resize: vertical; min-height: 360px; }
+.test-result { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
+
+.comment-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; margin-top: 10px; font-size: 13px; color: var(--text-muted); }
+.badge-ai-reply   { background: var(--success-soft); color: var(--success); }
+.badge-ai-handoff { background: var(--warning-soft); color: var(--warning); }
+.badge-ai-ignore  { background: var(--bg-secondary); color: var(--text-muted); border: 1px solid var(--border); }
+
+@media (max-width: 800px) { .field-row { grid-template-columns: 1fr; } }

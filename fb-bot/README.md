@@ -8,6 +8,7 @@ PHP 8.2+ (কোনো framework নেই), SQLite, shared cPanel হোস্�
 ## ফোল্ডার
 
 ```
+vendor/          composer লাইব্রেরি (git-এ নেই, composer install দিয়ে আসে)
 public/          ওয়েব রুট — সাবডোমেইন শুধু এই ফোল্ডারে পয়েন্ট করবে
   admin/         অ্যাডমিন প্যানেল
   webhook.php    Facebook webhook (Phase 1)
@@ -17,7 +18,7 @@ src/             মূল কোড
 database/        ডাটাবেস migration
 worker/run.php   cron দিয়ে প্রতি মিনিটে চলে
 bin/             setup ও পাসওয়ার্ড স্ক্রিপ্ট
-kb/knowledge.md  বট শুধু এখান থেকেই উত্তর দেবে
+kb/knowledge.md  Knowledge Base-এর শুরুর টেমপ্লেট (আসল তথ্য প্যানেল থেকে লেখা হয়, থাকে storage/-এ)
 storage/         SQLite ডাটাবেস ও লগ (ওয়েব থেকে খোলা যায় না)
 tests/           run.php = নিজে নিজে চেক, send-fake-comment.php = নকল কমেন্ট পাঠানো
 docs/            ধাপে ধাপে গাইড
@@ -85,3 +86,12 @@ cPanel → **Cron Jobs** → **Add New Cron Job**:
 php bin/connect-page.php                                          # পেজ token নিয়ে .env-এ রাখে, webhook subscribe করে
 php tests/send-fake-comment.php https://সাবডোমেইন/webhook.php "দাম কত?"   # নকল কমেন্ট পাঠিয়ে টেস্ট
 ```
+
+## Phase 2: AI দিয়ে কমেন্টের উত্তর
+পুরো গাইড: [`docs/PHASE2_AI.md`](docs/PHASE2_AI.md)
+
+```bash
+composer install --no-dev      # প্রথমবার, আর composer.lock বদলালে
+```
+মডেল (Opus 5.5 / Sonnet 5.5 / Haiku 4.5), DRY_RUN, বট চালু/বন্ধ, টোন আর সীমা প্যানেলের **সেটিংস** থেকে বদলানো যায়।
+Knowledge Base প্যানেল থেকে এডিট করা হয়, আর থাকে `storage/knowledge.md`-এ (git-এর বাইরে)।

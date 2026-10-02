@@ -35,7 +35,7 @@ Secrets (tokens, keys, password hash) stay in `.env` and are never shown in the 
 - PHP 8.2+, no framework, cURL for HTTP
 - SQLite via PDO; schema kept portable for a later move to MySQL
 - `.env` for secrets and settings, committed `.env.example`
-- Text AI: OpenRouter by default, provider and model in `.env`
+- Text AI: Claude API via the official Anthropic PHP SDK (composer). Model, effort, DRY_RUN, tone and limits are switchable in the admin panel; API key only in `.env`
 - Hosting: shared cPanel, subdomain document root = `fb-bot/public`, cron worker, deploy with cPanel Git Version Control
 
 ## Webhook and reliability rules
@@ -57,8 +57,8 @@ Messenger replies to the public need `pages_messaging` Advanced Access (App Revi
 ## Phases
 0. **Scaffold + admin login.** Structure, `.env.example`, migrations, setup and password scripts, dashboard with system checks and cron heartbeat, privacy page, README. Test: log in on the subdomain, all checks green, cron interval visible.
 1. **Webhook + Meta App Live.** Verification, signature check, `feed` event logging, Logs page. Test: a comment from another account appears in the panel log.
-2. **AI comment reply.** Worker, dedupe, loop guard, limits, OpenRouter, DRY_RUN, Comments page, KB editor. Test: a known question gets a correct reply, exactly once.
-3. **Handoff + settings.** Needs-human queue with manual reply, settings page, error handling and retries. Test: an unknown question shows up in the queue and can be answered from the panel.
+2. **AI comment reply.** Worker + job queue with retries, limits, Claude API with structured output, DRY_RUN, settings page (model switch), KB editor with live test, cost tracking. Test: a known question gets a correct reply, exactly once.
+3. **Handoff queue.** Needs-human queue with manual reply from the panel, approve-and-post for DRY_RUN replies. Test: an unknown question shows up in the queue and can be answered from the panel.
 4. *Later:* Messenger inbox replies (after App Review), then image generation → owner approval → publish (from the original brief).
 
 ## Fill in before starting

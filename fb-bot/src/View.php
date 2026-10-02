@@ -60,9 +60,9 @@ final class View
             ['index.php', 'home', 'ড্যাশবোর্ড', true],
             ['comments.php', 'chat', 'কমেন্ট', true],
             ['#', 'user', 'মানুষ লাগবে', false],
-            ['#', 'book', 'Knowledge Base', false],
+            ['knowledge.php', 'book', 'Knowledge Base', true],
             ['logs.php', 'list', 'লগ', true],
-            ['#', 'settings', 'সেটিংস', false],
+            ['settings.php', 'settings', 'সেটিংস', true],
         ];
         $app = self::e(Env::get('APP_NAME', 'FB Page Bot'));
         ?>

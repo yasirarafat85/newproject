@@ -57,6 +57,12 @@ final class Health
             'detail' => $missing === [] ? 'সব পূরণ করা আছে' : 'খালি: ' . implode(', ', $missing),
         ];
 
+        $sdk = class_exists(\Anthropic\Client::class);
+        $checks[] = ['label' => 'AI লাইব্রেরি (composer)', 'ok' => $sdk, 'detail' => $sdk ? 'ইনস্টল করা আছে' : 'নেই — Terminal-এ composer install --no-dev চালান'];
+        $checks[] = ['label' => 'AI API key (.env)', 'ok' => Env::has('AI_API_KEY'), 'detail' => Env::has('AI_API_KEY') ? 'সেট করা আছে' : 'AI_API_KEY খালি'];
+        $kb = KnowledgeBase::isFilled();
+        $checks[] = ['label' => 'Knowledge Base', 'ok' => $kb, 'detail' => $kb ? 'তথ্য আছে' : 'খালি — প্যানেলের Knowledge Base পেজে লিখুন'];
+
         $lastEvent = null;
         try {
             $lastEvent = Settings::get('webhook_last_event');

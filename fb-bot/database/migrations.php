@@ -80,4 +80,28 @@ return [
         )",
         "CREATE INDEX IF NOT EXISTS idx_login_attempts_ip ON login_attempts (ip, created_at)",
     ],
+
+    2 => [
+        // What the AI decided for each comment and which model answered.
+        "ALTER TABLE comments ADD COLUMN ai_action TEXT",
+        "ALTER TABLE comments ADD COLUMN ai_model TEXT",
+        "ALTER TABLE comments ADD COLUMN cost_micros INTEGER",
+        "ALTER TABLE comments ADD COLUMN replied_at TEXT",
+
+        // Every AI call with token usage and estimated cost (USD millionths).
+        // purpose: comment | test
+        "CREATE TABLE IF NOT EXISTS ai_calls (
+            id {ID},
+            purpose TEXT NOT NULL,
+            comment_id TEXT,
+            model TEXT NOT NULL,
+            input_tokens INTEGER NOT NULL DEFAULT 0,
+            output_tokens INTEGER NOT NULL DEFAULT 0,
+            cache_read_tokens INTEGER NOT NULL DEFAULT 0,
+            cache_write_tokens INTEGER NOT NULL DEFAULT 0,
+            cost_micros INTEGER NOT NULL DEFAULT 0,
+            created_at TEXT NOT NULL
+        )",
+        "CREATE INDEX IF NOT EXISTS idx_ai_calls_created ON ai_calls (created_at)",
+    ],
 ];

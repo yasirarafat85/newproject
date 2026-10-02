@@ -163,6 +163,10 @@ final class Webhook
             ]
         );
 
+        if (!$isOwn) {
+            CommentResponder::enqueue($commentId);
+        }
+
         Logger::info('webhook', $isOwn ? 'Page\'s own comment recorded (no reply)' : 'Comment received', [
             'comment_id' => $commentId,
             'post_id' => $value['post_id'] ?? null,

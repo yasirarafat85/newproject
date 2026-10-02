@@ -1,0 +1,20 @@
+{
+    "name": "fb-bot/app",
+    "description": "Facebook Page comment auto-reply bot",
+    "type": "project",
+    "require": {
+        "php": ">=8.2",
+        "anthropic-ai/sdk": "^0.54.0",
+        "guzzlehttp/guzzle": "^8.2"
+    },
+    "config": {
+        "platform": {
+            "php": "8.2.0"
+        },
+        "optimize-autoloader": true,
+        "sort-packages": true,
+        "allow-plugins": {
+            "php-http/discovery": false
+        }
+    }
+}

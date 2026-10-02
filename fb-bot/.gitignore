@@ -3,8 +3,10 @@
 storage/*.sqlite
 storage/*.sqlite-*
 storage/*.lock
+storage/knowledge.md
 storage/logs/*
 !storage/logs/.gitkeep
 public/media/*
 !public/media/.gitkeep
 !public/media/.htaccess
+vendor/

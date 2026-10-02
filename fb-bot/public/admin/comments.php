@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 require __DIR__ . '/../../bootstrap.php';
 
+use App\AiModels;
 use App\Auth;
 use App\Database;
 use App\View;
@@ -22,6 +23,8 @@ $statuses = [
     'skipped' => 'বাদ',
     'failed' => 'ব্যর্থ',
 ];
+
+$aiActions = ['reply' => 'AI: উত্তর', 'handoff' => 'AI: মানুষ লাগবে', 'ignore' => 'AI: উপেক্ষা'];
 
 $status = (string) ($_GET['status'] ?? '');
 if (!array_key_exists($status, $statuses)) {
@@ -84,6 +87,14 @@ View::header('কমেন্ট', 'comments.php');
         <div class="comment-body"><?= View::e($c['message']) ?></div>
         <?php if (!empty($c['reply_text'])): ?>
           <div class="comment-reply"><?= View::e($c['reply_text']) ?></div>
+        <?php endif; ?>
+        <?php if (!empty($c['ai_action'])): ?>
+          <div class="comment-meta">
+            <span class="badge badge-ai-<?= View::e($c['ai_action']) ?>"><?= View::e($aiActions[$c['ai_action']] ?? $c['ai_action']) ?></span>
+            <span><?= View::e(AiModels::label($c['ai_model'])) ?></span>
+            <?php if ($c['cost_micros'] !== null): ?><span><?= AiModels::formatCost((int) $c['cost_micros']) ?></span><?php endif; ?>
+            <?php if (!empty($c['replied_at'])): ?><span>পোস্ট হয়েছে <?= View::localTime($c['replied_at']) ?></span><?php endif; ?>
+          </div>
         <?php endif; ?>
         <?php if (!empty($c['note'])): ?>
           <div class="comment-note"><?= View::e($c['note']) ?></div>

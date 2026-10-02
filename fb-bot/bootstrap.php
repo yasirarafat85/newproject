@@ -20,6 +20,11 @@ spl_autoload_register(static function (string $class): void {
     }
 });
 
+// Composer packages (Anthropic SDK). Missing vendor/ is reported on the dashboard.
+if (is_file(BASE_PATH . '/vendor/autoload.php')) {
+    require BASE_PATH . '/vendor/autoload.php';
+}
+
 App\Env::load(getenv('FBBOT_ENV_FILE') ?: BASE_PATH . '/.env');
 
 date_default_timezone_set('UTC');

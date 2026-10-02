@@ -31,4 +31,43 @@ final class Settings
     {
         return self::get('bot_enabled', '1') === '1';
     }
+
+    // Values below can be changed in the panel; .env gives the first default.
+
+    public static function dryRun(): bool
+    {
+        return self::get('dry_run', Env::bool('DRY_RUN', true) ? '1' : '0') === '1';
+    }
+
+    public static function aiModel(): string
+    {
+        $model = (string) self::get('ai_model', Env::get('AI_MODEL', AiModels::DEFAULT_MODEL));
+        return AiModels::get($model) !== null ? $model : AiModels::DEFAULT_MODEL;
+    }
+
+    public static function aiEffort(): string
+    {
+        $effort = (string) self::get('ai_effort', 'low');
+        return in_array($effort, AiModels::EFFORTS, true) ? $effort : 'low';
+    }
+
+    public static function replyTone(): string
+    {
+        return (string) self::get('reply_tone', 'বন্ধুসুলভ ও ভদ্র, ছোট করে');
+    }
+
+    public static function handoffContact(): string
+    {
+        return (string) self::get('handoff_contact', Env::get('HANDOFF_CONTACT'));
+    }
+
+    public static function repliesPerUserPerHour(): int
+    {
+        return max(1, (int) self::get('replies_per_user_per_hour', (string) Env::int('REPLIES_PER_USER_PER_HOUR', 5)));
+    }
+
+    public static function maxRepliesPerDay(): int
+    {
+        return max(1, (int) self::get('max_replies_per_day', (string) Env::int('MAX_REPLIES_PER_DAY', 300)));
+    }
 }
