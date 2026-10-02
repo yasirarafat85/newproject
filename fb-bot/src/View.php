@@ -40,15 +40,28 @@ final class View
         return '<svg viewBox="0 0 24 24" aria-hidden="true">' . ($paths[$name] ?? '') . '</svg>';
     }
 
+    /** Previous / next links that keep the current query filters. */
+    public static function pager(int $page, bool $hasNext): string
+    {
+        $link = static function (int $to): string {
+            return '?' . http_build_query(array_merge($_GET, ['page' => $to]));
+        };
+        $html = '<div class="pager">';
+        $html .= $page > 1 ? '<a class="btn-ghost" href="' . self::e($link($page - 1)) . '">← আগের</a>' : '<span></span>';
+        $html .= '<span class="muted">পৃষ্ঠা ' . $page . '</span>';
+        $html .= $hasNext ? '<a class="btn-ghost" href="' . self::e($link($page + 1)) . '">পরের →</a>' : '<span></span>';
+        return $html . '</div>';
+    }
+
     /** Opens the admin page shell (sidebar + main). */
     public static function header(string $title, string $active): void
     {
         $nav = [
             ['index.php', 'home', 'ড্যাশবোর্ড', true],
-            ['#', 'chat', 'কমেন্ট', false],
+            ['comments.php', 'chat', 'কমেন্ট', true],
             ['#', 'user', 'মানুষ লাগবে', false],
             ['#', 'book', 'Knowledge Base', false],
-            ['#', 'list', 'লগ', false],
+            ['logs.php', 'list', 'লগ', true],
             ['#', 'settings', 'সেটিংস', false],
         ];
         $app = self::e(Env::get('APP_NAME', 'FB Page Bot'));

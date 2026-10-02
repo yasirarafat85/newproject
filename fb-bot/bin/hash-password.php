@@ -12,41 +12,18 @@ if (PHP_SAPI !== 'cli') {
     exit("Run this from the terminal.\n");
 }
 
-function ask(string $prompt): string
-{
-    echo $prompt;
-    $hidden = DIRECTORY_SEPARATOR === '/' && stream_isatty(STDIN);
-    if ($hidden) {
-        shell_exec('stty -echo');
-    }
-    $value = rtrim((string) fgets(STDIN), "\r\n");
-    if ($hidden) {
-        shell_exec('stty echo');
-        echo "\n";
-    }
-    return $value;
-}
+require dirname(__DIR__) . '/bootstrap.php';
 
-$password = ask('New admin password (min 10 characters): ');
+use App\Cli;
+use App\EnvFile;
+
+$password = Cli::askHidden('New admin password (min 10 characters): ');
 if (mb_strlen($password) < 10) {
     exit("Too short. Use at least 10 characters.\n");
 }
-if (ask('Repeat password: ') !== $password) {
+if (Cli::askHidden('Repeat password: ') !== $password) {
     exit("Passwords do not match.\n");
 }
 
-$line = "ADMIN_PASSWORD_HASH='" . password_hash($password, PASSWORD_DEFAULT) . "'";
-$envFile = dirname(__DIR__) . '/.env';
-
-if (!is_file($envFile)) {
-    echo ".env not found. Run php bin/setup.php first, or add this line to .env yourself:\n$line\n";
-    exit(1);
-}
-
-$env = (string) file_get_contents($envFile);
-$env = preg_match('/^ADMIN_PASSWORD_HASH=.*$/m', $env)
-    ? preg_replace_callback('/^ADMIN_PASSWORD_HASH=.*$/m', static fn () => $line, $env)
-    : rtrim($env) . "\n$line\n";
-file_put_contents($envFile, $env);
-
+EnvFile::set('ADMIN_PASSWORD_HASH', password_hash($password, PASSWORD_DEFAULT));
 echo "Password saved to .env. You can now log in to the admin panel.\n";

@@ -66,6 +66,17 @@ View::header('ড্যাশবোর্ড', 'index.php');
   <?php endforeach; ?>
 </section>
 
+<?php $appUrl = rtrim(Env::get('APP_URL'), '/'); ?>
+<section class="card connect-card">
+  <h3>Facebook সংযোগের তথ্য</h3>
+  <p class="muted">Meta dashboard-এ Webhook সেট করার সময় এগুলো কপি করে বসাবেন।</p>
+  <dl class="kv">
+    <dt>Callback URL</dt><dd><code><?= View::e($appUrl . '/webhook.php') ?></code></dd>
+    <dt>Verify token</dt><dd><code><?= View::e(Env::get('WEBHOOK_VERIFY_TOKEN', '— php bin/setup.php চালান —')) ?></code></dd>
+    <dt>Privacy Policy URL</dt><dd><code><?= View::e($appUrl . '/privacy.php') ?></code></dd>
+  </dl>
+</section>
+
 <div class="grid-2">
   <section class="card">
     <h3>সিস্টেম চেক</h3>

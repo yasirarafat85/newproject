@@ -47,6 +47,27 @@ final class Health
 
         $checks[] = self::workerCheck();
 
+        $missing = array_values(array_filter(
+            ['APP_ID', 'APP_SECRET', 'WEBHOOK_VERIFY_TOKEN', 'PAGE_ID', 'PAGE_ACCESS_TOKEN'],
+            static fn (string $key) => !Env::has($key)
+        ));
+        $checks[] = [
+            'label' => 'Facebook সেটিং (.env)',
+            'ok' => $missing === [],
+            'detail' => $missing === [] ? 'সব পূরণ করা আছে' : 'খালি: ' . implode(', ', $missing),
+        ];
+
+        $lastEvent = null;
+        try {
+            $lastEvent = Settings::get('webhook_last_event');
+        } catch (\Throwable) {
+        }
+        $checks[] = [
+            'label' => 'Facebook থেকে শেষ ইভেন্ট',
+            'ok' => $lastEvent !== null,
+            'detail' => $lastEvent === null ? 'এখনো কিছু আসেনি' : View::localTime($lastEvent),
+        ];
+
         return $checks;
     }
 

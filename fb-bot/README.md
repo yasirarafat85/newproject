@@ -19,7 +19,8 @@ worker/run.php   cron দিয়ে প্রতি মিনিটে চল�
 bin/             setup ও পাসওয়ার্ড স্ক্রিপ্ট
 kb/knowledge.md  বট শুধু এখান থেকেই উত্তর দেবে
 storage/         SQLite ডাটাবেস ও লগ (ওয়েব থেকে খোলা যায় না)
-tests/run.php    নিজে নিজে চেক
+tests/           run.php = নিজে নিজে চেক, send-fake-comment.php = নকল কমেন্ট পাঠানো
+docs/            ধাপে ধাপে গাইড
 ```
 
 ## cPanel-এ সেটআপ (Phase 0)
@@ -75,3 +76,12 @@ cPanel → **Cron Jobs** → **Add New Cron Job**:
 5. নিরাপত্তা চেক — এই দুটো লিংক খুললে **কিছু দেখাবে না** (403 বা 404 আসবে):
    - `https://আপনার-সাবডোমেইন/.env`
    - `https://আপনার-সাবডোমেইন/storage/app.sqlite`
+
+## Phase 1: Facebook সংযোগ
+পুরো গাইড: [`docs/META_SETUP.md`](docs/META_SETUP.md)
+
+দরকারি কমান্ড:
+```bash
+php bin/connect-page.php                                          # পেজ token নিয়ে .env-এ রাখে, webhook subscribe করে
+php tests/send-fake-comment.php https://সাবডোমেইন/webhook.php "দাম কত?"   # নকল কমেন্ট পাঠিয়ে টেস্ট
+```

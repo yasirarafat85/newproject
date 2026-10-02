@@ -23,6 +23,8 @@ if (!is_file($base . '/.env') && !getenv('FBBOT_ENV_FILE')) {
 require $base . '/bootstrap.php';
 
 use App\Database;
+use App\Env;
+use App\EnvFile;
 use App\Migrator;
 use App\Settings;
 
@@ -30,6 +32,11 @@ foreach (['storage', 'storage/logs', 'public/media'] as $dir) {
     if (!is_dir(BASE_PATH . "/$dir")) {
         mkdir(BASE_PATH . "/$dir", 0775, true);
     }
+}
+
+if (!Env::has('WEBHOOK_VERIFY_TOKEN')) {
+    EnvFile::set('WEBHOOK_VERIFY_TOKEN', bin2hex(random_bytes(16)));
+    echo "Generated WEBHOOK_VERIFY_TOKEN in .env.\n";
 }
 
 $pdo = Database::pdo(); // connecting applies pending migrations

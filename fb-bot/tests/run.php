@@ -20,6 +20,9 @@ file_put_contents($envFile, implode("\n", [
     "DB_PATH=$tmp/test.sqlite",
     "ADMIN_PASSWORD_HASH='" . password_hash('correct horse battery', PASSWORD_DEFAULT) . "'",
     'PAGE_ACCESS_TOKEN=EAAB-very-secret-token-123',
+    'APP_SECRET=test-app-secret-456',
+    'WEBHOOK_VERIFY_TOKEN=verify-me',
+    'PAGE_ID=111',
     'DRY_RUN=true # inline comment',
     '',
 ]));
@@ -34,6 +37,7 @@ use App\Health;
 use App\Logger;
 use App\Migrator;
 use App\Settings;
+use App\Webhook;
 
 $failures = 0;
 function check(string $name, bool $ok): void
@@ -91,6 +95,58 @@ echo "Worker heartbeat\n";
 check('worker reported as never run', Health::workerCheck()['ok'] === false);
 Health::recordWorkerRun();
 check('worker reported alive after a run', Health::workerCheck()['ok'] === true);
+
+echo "Webhook verification\n";
+check('correct verify token returns challenge', Webhook::verify(['hub_mode' => 'subscribe', 'hub_verify_token' => 'verify-me', 'hub_challenge' => '12345']) === [200, '12345']);
+check('wrong verify token rejected', Webhook::verify(['hub_mode' => 'subscribe', 'hub_verify_token' => 'nope', 'hub_challenge' => '12345'])[0] === 403);
+check('unsafe challenge rejected', Webhook::verify(['hub_mode' => 'subscribe', 'hub_verify_token' => 'verify-me', 'hub_challenge' => '<script>'])[0] === 403);
+
+echo "Webhook events\n";
+function commentPayload(string $commentId, string $fromId, string $verb = 'add', string $message = 'দাম কত?'): string
+{
+    return json_encode(['object' => 'page', 'entry' => [['id' => '111', 'time' => time(), 'changes' => [[
+        'field' => 'feed',
+        'value' => [
+            'item' => 'comment', 'verb' => $verb, 'comment_id' => $commentId, 'post_id' => '111_222',
+            'parent_id' => '111_222', 'from' => ['id' => $fromId, 'name' => 'Rahim'], 'message' => $message,
+        ],
+    ]]]]], JSON_UNESCAPED_UNICODE);
+}
+function sign(string $body): string
+{
+    return 'sha256=' . hash_hmac('sha256', $body, 'test-app-secret-456');
+}
+$countComments = static fn (): int => (int) Database::one('SELECT COUNT(*) AS n FROM comments')['n'];
+
+$body = commentPayload('222_1', '999');
+check('missing signature rejected', Webhook::receive($body, null)[0] === 403);
+check('wrong signature rejected', Webhook::receive($body, 'sha256=' . str_repeat('0', 64))[0] === 403);
+check('tampered body rejected', Webhook::receive(str_replace('Rahim', 'Karim', $body), sign($body))[0] === 403);
+check('nothing stored from rejected requests', $countComments() === 0);
+
+check('valid comment accepted', Webhook::receive($body, sign($body)) === [200, 'EVENT_RECEIVED']);
+$row = Database::one("SELECT * FROM comments WHERE comment_id = '222_1'");
+check('comment stored as new with text and author', $row !== null && $row['status'] === 'new' && $row['message'] === 'দাম কত?' && $row['from_name'] === 'Rahim');
+
+check('retried delivery accepted', Webhook::receive($body, sign($body))[0] === 200);
+check('retried delivery stored only once', $countComments() === 1);
+
+$own = commentPayload('222_2', '111');
+Webhook::receive($own, sign($own));
+check("Page's own comment marked skipped", Database::one("SELECT status FROM comments WHERE comment_id = '222_2'")['status'] === 'skipped');
+
+$edit = commentPayload('222_1', '999', 'edited', 'changed');
+Webhook::receive($edit, sign($edit));
+check('edited comment does not change or add rows', $countComments() === 2 && Database::one("SELECT message FROM comments WHERE comment_id = '222_1'")['message'] === 'দাম কত?');
+
+$other = json_encode(['object' => 'instagram', 'entry' => []]);
+check('non-page object acknowledged and ignored', Webhook::receive($other, sign($other))[0] === 200 && $countComments() === 2);
+
+$big = str_repeat('x', Webhook::MAX_BODY_BYTES + 1);
+check('oversized body rejected', Webhook::receive($big, sign($big))[0] === 413);
+
+check('last event time recorded', Settings::get('webhook_last_event') !== null);
+check('app secret never stored in logs', Database::one("SELECT COUNT(*) AS n FROM logs WHERE context LIKE '%test-app-secret%' OR message LIKE '%test-app-secret%'")['n'] == 0);
 
 // Clean up
 Database::setPdo(null);
