@@ -3,7 +3,14 @@
 Facebook Page-এর কমেন্টে AI দিয়ে স্বয়ংক্রিয় উত্তর দেওয়ার বট, সাথে বাংলা অ্যাডমিন প্যানেল।
 PHP 8.2+ (কোনো framework নেই), SQLite, shared cPanel হোস্টিংয়ে চলে।
 
-পুরো পরিকল্পনা আর নিয়ম: [`PROJECT_BRIEF.md`](PROJECT_BRIEF.md)
+## ডকুমেন্টেশন
+| ফাইল | কী আছে |
+|---|---|
+| [`PROJECT_BRIEF.md`](PROJECT_BRIEF.md) | প্রজেক্ট প্ল্যান: লক্ষ্য, নিয়ম, ফেজ |
+| [`CHANGELOG.md`](CHANGELOG.md) | প্রতিটা ফেজে কী যোগ হয়েছে বা বদলেছে |
+| [`docs/META_SETUP.md`](docs/META_SETUP.md) | Phase 1: Meta App আর Webhook সেটআপ |
+| [`docs/PHASE2_AI.md`](docs/PHASE2_AI.md) | Phase 2: Claude API আর Knowledge Base |
+| [`docs/PHASE3_QUEUE.md`](docs/PHASE3_QUEUE.md) | Phase 3: "মানুষ লাগবে" তালিকা |
 
 ## ফোল্ডার
 
